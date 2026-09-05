@@ -55,8 +55,10 @@ export function PortTable({ ports, selection, onSelectionChange, empty }: PortTa
     <Table>
       <TableHeader>
         <TableRow className="hover:bg-transparent">
+          {/* Everything except Process is fixed width, so the one column that
+              actually varies in length gets all the remaining space. */}
           {selectable && (
-            <TableHead className="w-9 pl-3">
+            <TableHead className="w-11 pl-4">
               <Checkbox
                 checked={allSelected}
                 onCheckedChange={toggleAll}
@@ -64,13 +66,13 @@ export function PortTable({ ports, selection, onSelectionChange, empty }: PortTa
               />
             </TableHead>
           )}
-          <TableHead className="w-20 pl-4">Port</TableHead>
+          <TableHead className="w-[76px] pl-4">Port</TableHead>
           <TableHead>Process</TableHead>
-          <TableHead className="w-20">PID</TableHead>
-          <TableHead className="w-20">Protocol</TableHead>
-          <TableHead className="w-32">Address</TableHead>
-          <TableHead className="w-32">Status</TableHead>
-          <TableHead className="w-56 pr-3 text-right">Actions</TableHead>
+          <TableHead className="w-[76px]">PID</TableHead>
+          <TableHead className="w-[68px]">Protocol</TableHead>
+          <TableHead className="w-[116px]">Address</TableHead>
+          <TableHead className="w-[112px]">Status</TableHead>
+          <TableHead className="w-[152px] pr-3 text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

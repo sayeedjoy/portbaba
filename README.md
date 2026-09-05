@@ -12,7 +12,7 @@ Built with **Tauri 2**, **React 19**, **TypeScript**, **Tailwind CSS 4** and
 ## What it does
 
 Type a port number and portbaba tells you what is holding it *while you
-type* — process, PID, and where possible the framework and project directory:
+type* — process, PID, and where possible the framework and project directory: 
 
 ```
 5432
