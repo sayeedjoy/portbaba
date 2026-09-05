@@ -1,0 +1,322 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Typography
+   Archivo carries the interface: a grotesque with signage proportions and real
+   tabular figures, which matters when the content is columns of port numbers.
+   IBM Plex Mono is reserved for literal shell text — command lines and paths.
+   Both are bundled so the app renders identically offline.
+--------------------------------------------------------------------------- */
+
+@font-face {
+  font-family: "Archivo";
+  src: url("./assets/fonts/Archivo-400_700.woff2") format("woff2-variations");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("./assets/fonts/IBMPlexMono-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("./assets/fonts/IBMPlexMono-500.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ---------------------------------------------------------------------------
+   Palette
+   Colour is functional here, never decorative: a port is free, occupied or
+   protected, and each state owns exactly one hue. Vermilion appears only on
+   destructive actions, so it never loses its meaning.
+--------------------------------------------------------------------------- */
+
+:root {
+  color-scheme: light;
+
+  --ground: #e8ebec;
+  --panel: #ffffff;
+  --raised: #f1f4f5;
+  --sunken: #dfe4e6;
+  --hairline: #d3d9db;
+  --hairline-strong: #b9c2c5;
+
+  --ink: #131a1e;
+  --ink-soft: #47555c;
+  --ink-muted: #6d7b82;
+
+  --occupied: #a8690b;
+  --occupied-wash: #f6e9d3;
+  --free: #2f6f54;
+  --free-wash: #dbe9e2;
+  --danger: #bb3625;
+  --danger-hover: #a22e1f;
+  --danger-wash: #f7dfda;
+  --protected: #5b48ab;
+  --protected-wash: #e4e0f4;
+
+  --focus: #1f6feb;
+  --shadow-panel: 0 1px 2px rgb(19 26 30 / 0.06), 0 8px 24px -12px rgb(19 26 30 / 0.18);
+  --shadow-lift: 0 12px 40px -12px rgb(19 26 30 / 0.28);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --ground: #101418;
+  --panel: #171c21;
+  --raised: #1e252b;
+  --sunken: #0b0e11;
+  --hairline: #262e35;
+  --hairline-strong: #38434b;
+
+  --ink: #e3e8ea;
+  --ink-soft: #a4b0b6;
+  --ink-muted: #78868d;
+
+  --occupied: #e4a035;
+  --occupied-wash: #2e2417;
+  --free: #6fa88c;
+  --free-wash: #17241f;
+  --danger: #de5140;
+  --danger-hover: #ec6553;
+  --danger-wash: #2c1a17;
+  --protected: #9887d9;
+  --protected-wash: #211f30;
+
+  --focus: #58a6ff;
+  --shadow-panel: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -12px rgb(0 0 0 / 0.6);
+  --shadow-lift: 0 16px 48px -12px rgb(0 0 0 / 0.7);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --ground: #101418;
+    --panel: #171c21;
+    --raised: #1e252b;
+    --sunken: #0b0e11;
+    --hairline: #262e35;
+    --hairline-strong: #38434b;
+
+    --ink: #e3e8ea;
+    --ink-soft: #a4b0b6;
+    --ink-muted: #78868d;
+
+    --occupied: #e4a035;
+    --occupied-wash: #2e2417;
+    --free: #6fa88c;
+    --free-wash: #17241f;
+    --danger: #de5140;
+    --danger-hover: #ec6553;
+    --danger-wash: #2c1a17;
+    --protected: #9887d9;
+    --protected-wash: #211f30;
+
+    --focus: #58a6ff;
+    --shadow-panel: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -12px rgb(0 0 0 / 0.6);
+    --shadow-lift: 0 16px 48px -12px rgb(0 0 0 / 0.7);
+  }
+}
+
+@theme inline {
+  --color-ground: var(--ground);
+  --color-panel: var(--panel);
+  --color-raised: var(--raised);
+  --color-sunken: var(--sunken);
+  --color-hairline: var(--hairline);
+  --color-hairline-strong: var(--hairline-strong);
+
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-muted: var(--ink-muted);
+
+  --color-occupied: var(--occupied);
+  --color-occupied-wash: var(--occupied-wash);
+  --color-free: var(--free);
+  --color-free-wash: var(--free-wash);
+  --color-danger: var(--danger);
+  --color-danger-hover: var(--danger-hover);
+  --color-danger-wash: var(--danger-wash);
+  --color-protected: var(--protected);
+  --color-protected-wash: var(--protected-wash);
+  --color-focus: var(--focus);
+
+  --font-sans: "Archivo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --shadow-panel: var(--shadow-panel);
+  --shadow-lift: var(--shadow-lift);
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+--------------------------------------------------------------------------- */
+
+/*
+ * These live in `@layer base` on purpose. Unlayered rules beat everything in
+ * Tailwind's layers, so an unlayered `input { font: inherit }` would silently
+ * override every `text-[…]` utility on a form control — including the port
+ * field, which is the largest piece of type in the app.
+ */
+@layer base {
+  * {
+    border-color: var(--hairline);
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+    /* Numbers are the content of this app, so they always align in columns. */
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    /* A desktop chrome, not a document: the app owns its own scrolling. */
+    overflow: hidden;
+    overscroll-behavior: none;
+    user-select: none;
+    cursor: default;
+  }
+
+  input,
+  button,
+  select,
+  textarea {
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--focus) 30%, transparent);
+  }
+
+  /* Slim scrollbars that sit inside the panel rather than on top of it. */
+  ::-webkit-scrollbar {
+    width: 11px;
+    height: 11px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--hairline-strong);
+    border: 3px solid transparent;
+    background-clip: content-box;
+    border-radius: 999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--ink-muted);
+    background-clip: content-box;
+  }
+}
+
+/* Paths, PIDs and command lines are worth copying out of the app. */
+.selectable {
+  user-select: text;
+  cursor: text;
+}
+
+/* ---------------------------------------------------------------------------
+   Motion
+   One orchestrated moment only: when a port is actually freed, the row it lived
+   on flashes from occupied to free so the change is visible rather than merely
+   reported. Everything else is instant.
+--------------------------------------------------------------------------- */
+
+@keyframes freed {
+  0% {
+    background-color: var(--free-wash);
+    box-shadow: inset 3px 0 0 var(--free);
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: inset 3px 0 0 transparent;
+  }
+}
+
+.animate-freed {
+  animation: freed 1.4s ease-out;
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-overlay {
+  animation: overlay-in 120ms ease-out;
+}
+
+.animate-dialog {
+  animation: dialog-in 140ms cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+@keyframes sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(400%);
+  }
+}
+
+.animate-sweep {
+  animation: sweep 1.1s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
