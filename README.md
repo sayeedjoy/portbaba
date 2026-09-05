@@ -1,4 +1,4 @@
-# Port Killer
+# portbaba
 
 > Find it. Kill it. Free the port.
 
@@ -11,7 +11,7 @@ Built with **Tauri 2**, **React 19**, **TypeScript**, **Tailwind CSS 4** and
 
 ## What it does
 
-Type a port number and Port Killer tells you what is holding it *while you
+Type a port number and portbaba tells you what is holding it *while you
 type* — process, PID, and where possible the framework and project directory:
 
 ```
@@ -57,8 +57,8 @@ every installer the host platform supports. Everything lands under
 
 | Platform | Command | Output |
 | --- | --- | --- |
-| macOS | `pnpm tauri build` | `dmg/Port Killer_0.1.0_aarch64.dmg`, `macos/Port Killer.app` |
-| Windows | `pnpm tauri build` | `nsis/Port Killer_0.1.0_x64-setup.exe`, `msi/Port Killer_0.1.0_x64_en-US.msi` |
+| macOS | `pnpm tauri build` | `dmg/portbaba_0.1.0_aarch64.dmg`, `macos/portbaba.app` |
+| Windows | `pnpm tauri build` | `nsis/portbaba_0.1.0_x64-setup.exe`, `msi/portbaba_0.1.0_x64_en-US.msi` |
 | Linux | `pnpm tauri build` | `deb/`, `rpm/`, `appimage/` |
 
 Use `--bundles` to produce just one format. The accepted values depend on the
@@ -87,7 +87,7 @@ pnpm tauri build --target universal-apple-darwin
 The universal `.dmg` is roughly twice the size, since it carries both slices.
 
 **Gatekeeper.** Builds are ad-hoc signed, which is enough to run locally but not
-to distribute: anyone else who opens the `.dmg` gets "Port Killer is damaged and
+to distribute: anyone else who opens the `.dmg` gets "portbaba is damaged and
 can't be opened". To ship it you need an Apple Developer ID certificate, set
 before building:
 
@@ -107,7 +107,7 @@ a quarantined ad-hoc-signed app is reported as damaged rather than merely
 unidentified. Testers have to clear the quarantine flag explicitly:
 
 ```bash
-xattr -dr com.apple.quarantine "/Applications/Port Killer.app"
+xattr -dr com.apple.quarantine "/Applications/portbaba.app"
 ```
 
 ### Windows
@@ -223,7 +223,7 @@ between a useful error message and a confusing one.
 src/                      React frontend
 ├── components/           Table, dialogs, quick-kill, command palette
 │   ├── ui/               shadcn/ui primitives (Radix, cmdk, sonner)
-│   └── app/              Port Killer's own presentational pieces
+│   └── app/              portbaba's own presentational pieces
 ├── pages/                Dashboard, Ports, Processes, Favourites, History, Settings
 ├── hooks/                Port sync, kill flow, process details, hotkeys
 ├── stores/               Zustand: settings, scan data, UI state
@@ -244,7 +244,7 @@ UI primitives come from [shadcn/ui](https://ui.shadcn.com) and live in
 with `pnpm dlx shadcn@latest add <name>`.
 
 They are not themed with shadcn's default palette. `src/styles.css` maps each
-shadcn token onto the Port Killer token that already means that thing
+shadcn token onto the portbaba token that already means that thing
 (`--primary` → `--ink`, `--destructive` → `--danger`, `--card` → `--panel`, and
 so on), so components inherit this app's design rather than arriving with their
 own. Because those definitions reference custom properties, they re-resolve per
@@ -261,7 +261,7 @@ Two adjustments worth knowing about:
 
 ## Permissions
 
-Some processes belong to other users or to the system. Port Killer reports that
+Some processes belong to other users or to the system. portbaba reports that
 plainly and never escalates privileges on your behalf — if a process needs root
 or Administrator to stop, you are told, and it stays running until you decide.
 

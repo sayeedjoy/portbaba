@@ -52,7 +52,7 @@ export default function App() {
     // A brief, honest placeholder rather than a skeleton that pretends to have data.
     return (
       <div className="flex h-full items-center justify-center text-ink-muted">
-        Starting Port Killer…
+        Starting portbaba…
       </div>
     );
   }

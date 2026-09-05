@@ -28,7 +28,7 @@ export function Settings() {
         <Row
           id="launch-at-startup"
           label="Launch at startup"
-          hint="Open Port Killer when you log in."
+          hint="Open portbaba when you log in."
         >
           <Switch
             id="launch-at-startup"
@@ -39,7 +39,7 @@ export function Settings() {
         <Row
           id="close-to-tray"
           label="Keep running in the tray"
-          hint="Closing the window leaves Port Killer in the tray instead of quitting."
+          hint="Closing the window leaves portbaba in the tray instead of quitting."
         >
           <Switch
             id="close-to-tray"
@@ -199,7 +199,7 @@ export function Settings() {
 
       {system && (
         <p className="mt-8 text-[13px] text-ink-muted">
-          Port Killer {system.appVersion} on {system.osVersion ?? system.os} (
+          portbaba {system.appVersion} on {system.osVersion ?? system.os} (
           {system.arch}).{" "}
           {system.elevated
             ? "Running with elevated privileges."

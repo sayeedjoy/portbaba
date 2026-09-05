@@ -58,7 +58,7 @@ export function ProtectedTag({ className }: { className?: string }) {
         </Badge>
       </TooltipTrigger>
       <TooltipContent className="max-w-64">
-        The operating system depends on this process. Port Killer will not
+        The operating system depends on this process. portbaba will not
         terminate it unless you turn off protection in Settings → Safety.
       </TooltipContent>
     </Tooltip>

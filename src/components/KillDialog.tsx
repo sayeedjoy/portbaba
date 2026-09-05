@@ -101,7 +101,7 @@ export function KillDialog() {
             title="This is a system process"
             body={`Terminating ${protectedTargets
               .map((t) => t.processName)
-              .join(", ")} may cause system instability, so Port Killer will refuse. Turn off "Protect system processes" in Settings → Safety if you are certain.`}
+              .join(", ")} may cause system instability, so portbaba will refuse. Turn off "Protect system processes" in Settings → Safety if you are certain.`}
           />
         ) : protectedTargets.length > 0 ? (
           <Warning

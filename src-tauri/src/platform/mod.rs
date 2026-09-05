@@ -32,7 +32,7 @@ pub use macos::MacOsPortProvider as Platform;
 pub use windows::WindowsPortProvider as Platform;
 
 #[cfg(not(any(target_os = "linux", target_os = "macos", target_os = "windows")))]
-compile_error!("Port Killer supports Windows, macOS and Linux only.");
+compile_error!("portbaba supports Windows, macOS and Linux only.");
 
 /// A socket as the OS reports it, before we attach any process metadata.
 #[derive(Debug, Clone)]

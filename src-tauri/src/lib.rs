@@ -1,4 +1,4 @@
-//! Port Killer — find it, kill it, free the port.
+//! portbaba — find it, kill it, free the port.
 //!
 //! Wires the command surface (SRS §45) to the window, the system tray (FR-023,
 //! FR-024) and the optional global shortcut (FR-025).
@@ -84,7 +84,7 @@ pub fn run() {
         })
         .invoke_handler(command_handler())
         .build(tauri::generate_context!())
-        .expect("error while running Port Killer")
+        .expect("error while running portbaba")
         .run(|app, event| {
             // Hiding the last window must not quit the app while it is meant to
             // stay in the tray — but with that turned off, closing the window
@@ -248,7 +248,7 @@ fn apply_autostart<R: Runtime>(app: &AppHandle<R>, settings: &Settings) {
     if result.is_err() {
         let _ = app.emit(
             "settings:error",
-            "Port Killer could not change the launch-at-startup setting.",
+            "portbaba could not change the launch-at-startup setting.",
         );
     }
 }
@@ -262,7 +262,7 @@ fn build_tray<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
     let menu = tray_menu(app)?;
 
     let mut tray = TrayIconBuilder::with_id(TRAY_ID)
-        .tooltip("Port Killer")
+        .tooltip("portbaba")
         .menu(&menu)
         .show_menu_on_left_click(false)
         .on_menu_event(handle_tray_menu)
@@ -306,7 +306,7 @@ fn tray_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> {
     let open = MenuItem::with_id(app, "tray:open", "Open Dashboard", true, None::<&str>)?;
     let quick = MenuItem::with_id(app, "tray:quick", "Quick Kill Port…", true, None::<&str>)?;
     let refresh = MenuItem::with_id(app, "tray:refresh", "Refresh Ports", true, None::<&str>)?;
-    let quit = MenuItem::with_id(app, "tray:quit", "Quit Port Killer", true, None::<&str>)?;
+    let quit = MenuItem::with_id(app, "tray:quit", "Quit portbaba", true, None::<&str>)?;
     let separator = PredefinedMenuItem::separator(app)?;
 
     let favorites = app
@@ -381,7 +381,7 @@ fn tray_kill<R: Runtime>(app: AppHandle<R>, port: u16) {
         };
         let _ = app.emit("ports:changed", ());
         if store.settings().notifications {
-            notify(&app, "Port Killer", &message);
+            notify(&app, "portbaba", &message);
         }
     });
 }

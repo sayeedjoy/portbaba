@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Port Killer",
+  "productName": "portbaba",
   "version": "0.1.0",
   "identifier": "com.sayeedjoy.portbaba",
   "build": {
@@ -13,7 +13,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "Port Killer",
+        "title": "portbaba",
         "width": 1180,
         "height": 780,
         "minWidth": 920,
@@ -31,7 +31,7 @@
     "active": true,
     "targets": "all",
     "shortDescription": "Find it. Kill it. Free the port.",
-    "longDescription": "Port Killer shows which process is holding a local development port and frees it in one click — no lsof, no netstat, no PIDs to copy.",
+    "longDescription": "portbaba shows which process is holding a local development port and frees it in one click — no lsof, no netstat, no PIDs to copy.",
     "category": "DeveloperTool",
     "icon": [
       "icons/32x32.png",

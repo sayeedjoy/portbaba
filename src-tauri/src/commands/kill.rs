@@ -221,7 +221,7 @@ fn terminate(store: &Store, pid: u32, port: Option<u16>, force: bool) -> Result<
             process_name: Some(process.name.clone()),
             message: format!(
                 "{} (PID {pid}) is a system process. Terminating it may cause system instability, \
-                 so Port Killer left it alone. You can allow this in Settings → Safety.",
+                 so portbaba left it alone. You can allow this in Settings → Safety.",
                 process.name
             ),
             outcome: KillOutcome::Blocked,
@@ -412,7 +412,7 @@ fn finish<R: Runtime>(app: &AppHandle<R>, results: &[KillResult]) {
         return;
     }
     if let Some(summary) = notification_text(results) {
-        crate::notify(app, "Port Killer", &summary);
+        crate::notify(app, "portbaba", &summary);
     }
 }
 

@@ -1,6 +1,6 @@
 //! End-to-end checks against the real operating system.
 //!
-//! These bind actual sockets and then assert that Port Killer's discovery layer
+//! These bind actual sockets and then assert that portbaba's discovery layer
 //! finds them, which is the only way to be confident about §50's 500 ms budget
 //! and about the FR-001 field mapping on a given platform.
 

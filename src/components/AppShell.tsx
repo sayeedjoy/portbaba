@@ -40,7 +40,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         className="flex w-[186px] shrink-0 flex-col border-r border-hairline bg-panel"
       >
         <div className="px-4 pt-5 pb-4">
-          <p className="text-[15px] font-semibold tracking-[-0.01em]">Port Killer</p>
+          <p className="text-[15px] font-semibold tracking-[-0.01em]">portbaba</p>
           <p className="mt-0.5 text-[12.5px] text-ink-muted">
             {portCount} {portCount === 1 ? "port in use" : "ports in use"}
           </p>

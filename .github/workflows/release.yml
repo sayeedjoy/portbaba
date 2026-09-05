@@ -89,7 +89,7 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         with:
           tagName: ${{ github.ref_type == 'tag' && github.ref_name || format('v{0}-dev', github.run_number) }}
-          releaseName: Port Killer ${{ github.ref_type == 'tag' && github.ref_name || 'dev build' }}
+          releaseName: portbaba ${{ github.ref_type == 'tag' && github.ref_name || 'dev build' }}
           releaseBody: |
             Download the installer for your platform below.
 
