@@ -3,7 +3,7 @@ import { X } from "lucide-react";
 
 import { Empty, PageHeader, Panel } from "@/components/AppShell";
 import { PortBerth } from "@/components/PortBerth";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { useKill } from "@/hooks/useKill";
 import { parsePort } from "@/lib/utils";
 import * as api from "@/services/tauri";
@@ -106,7 +106,7 @@ export function Favorites() {
             placeholder="Next.js development server"
             width="flex-1 min-w-[220px]"
           />
-          <Button type="submit" variant="primary">
+          <Button type="submit" variant="default">
             Save port
           </Button>
         </form>

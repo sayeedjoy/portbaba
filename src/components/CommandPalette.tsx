@@ -1,20 +1,27 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import { Dialog } from "@/components/ui/Dialog";
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from "@/components/ui/command";
 import { useKill } from "@/hooks/useKill";
-import { cn, parsePort, parseRange } from "@/lib/utils";
+import { parsePort, parseRange } from "@/lib/utils";
 import { useData } from "@/stores/dataStore";
 import { useSettings } from "@/stores/settingsStore";
 import { useUi, type Route } from "@/stores/uiStore";
 
-interface Command {
-  id: string;
-  label: string;
-  hint?: string;
-  run: () => void;
-}
-
-/** §31 / FR-026 — Ctrl/Cmd+K. Typing a number turns it into a port command. */
+/**
+ * §31 / FR-026 — Ctrl/Cmd+K.
+ *
+ * cmdk handles filtering, keyboard navigation and the listbox semantics; what
+ * this adds is the port-aware commands, which only exist once the query parses
+ * as a port or a range.
+ */
 export function CommandPalette() {
   const open = useUi((s) => s.paletteOpen);
   const setOpen = useUi((s) => s.setPaletteOpen);
@@ -29,223 +36,180 @@ export function CommandPalette() {
   const { killPort, killByName } = useKill();
 
   const [query, setQuery] = useState("");
-  const [active, setActive] = useState(0);
-  const listRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
-    if (open) {
-      setQuery("");
-      setActive(0);
-    }
+    if (open) setQuery("");
   }, [open]);
 
-  const commands = useMemo<Command[]>(() => {
-    const list: Command[] = [];
-    const port = parsePort(query);
-    const range = parseRange(query);
+  const port = parsePort(query);
+  const range = parseRange(query);
 
-    // A bare number is almost always "deal with this port".
-    if (port !== null) {
-      const holder = ports.find((p) => p.port === port);
-      list.push({
-        id: `kill-${port}`,
-        label: `Kill port ${port}`,
-        hint: holder ? `held by ${holder.processName}` : "nothing is using it",
-        run: () => killPort(port),
-      });
-      list.push({
-        id: `check-${port}`,
-        label: `Check port ${port}`,
-        hint: "open it in Quick Kill",
-        run: () => {
-          navigate("dashboard");
-          window.setTimeout(() => {
-            const input = document.querySelector<HTMLInputElement>(
-              "input[aria-label='Port number']",
-            );
-            if (input) {
-              const setter = Object.getOwnPropertyDescriptor(
-                HTMLInputElement.prototype,
-                "value",
-              )?.set;
-              setter?.call(input, String(port));
-              input.dispatchEvent(new Event("input", { bubbles: true }));
-              input.focus();
-            }
-          }, 0);
-        },
-      });
-    }
-
-    if (range) {
-      list.push({
-        id: "range",
-        label: `Scan ports ${range[0]}–${range[1]}`,
-        hint: "open the range scanner",
-        run: () => {
-          navigate("ports");
-          toast("info", `Type ${range[0]}-${range[1]} in the Ports search to scan it.`);
-        },
-      });
-    }
-
-    // FR-020 — "Show Node processes" / "Kill all node".
-    const names = [...new Set(groups.map((g) => g.name))];
-    for (const name of names) {
-      list.push({
-        id: `show-${name}`,
-        label: `Show ${name} processes`,
-        run: () => navigate("processes"),
-      });
-      const targets = ports.filter((p) => p.processName === name);
-      list.push({
-        id: `kill-all-${name}`,
-        label: `Kill every ${name} process`,
-        hint: `${targets.length} holding a port`,
-        run: () => killByName(name, targets),
-      });
-    }
-
-    // One entry per process-and-port: a server listening on both IPv4 and IPv6
-    // is two sockets but only one thing the user can act on.
-    const seen = new Set<string>();
-    for (const port of ports) {
-      const key = `${port.pid}:${port.port}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      list.push({
-        id: `details-${key}`,
-        label: `${port.processName} on port ${port.port}`,
-        hint: `PID ${port.pid}`,
-        run: () => openDetails(port.pid),
-      });
-      if (seen.size >= 40) break;
-    }
-
-    const routes: [Route, string][] = [
-      ["dashboard", "Open Dashboard"],
-      ["ports", "Open Ports"],
-      ["processes", "Open Processes"],
-      ["favorites", "Open Favourites"],
-      ["history", "Open History"],
-      ["settings", "Open Settings"],
-    ];
-    for (const [route, label] of routes) {
-      list.push({ id: `go-${route}`, label, run: () => navigate(route) });
-    }
-
-    list.push({
-      id: "refresh",
-      label: "Refresh ports",
-      run: () => void refresh(),
-    });
-    list.push({
-      id: "theme",
-      label: theme === "dark" ? "Switch to light theme" : "Switch to dark theme",
-      run: () => void updateSettings({ theme: theme === "dark" ? "light" : "dark" }),
-    });
-
-    return list;
-  }, [
-    query,
-    ports,
-    groups,
-    theme,
-    killPort,
-    killByName,
-    navigate,
-    openDetails,
-    refresh,
-    toast,
-    updateSettings,
-  ]);
-
-  const results = useMemo(() => {
-    const needle = query.trim().toLowerCase();
-    if (!needle) return commands.slice(0, 12);
-    // The port commands built above already carry the number in their label, so
-    // a plain substring match keeps them at the top without letting a numeric
-    // query match everything else too.
-    return commands
-      .filter(
-        (c) =>
-          c.label.toLowerCase().includes(needle) ||
-          c.hint?.toLowerCase().includes(needle),
-      )
-      .slice(0, 12);
-  }, [commands, query]);
-
-  useEffect(() => setActive(0), [query]);
-
-  useEffect(() => {
-    listRef.current
-      ?.querySelector(`[data-index="${active}"]`)
-      ?.scrollIntoView({ block: "nearest" });
-  }, [active]);
-
-  if (!open) return null;
-
-  function run(command: Command) {
+  /** Every command dismisses the palette before it acts. */
+  function run(action: () => void) {
     setOpen(false);
-    command.run();
+    action();
   }
 
-  return (
-    <Dialog open onClose={() => setOpen(false)} className="max-w-xl">
-      <div className="border-b border-hairline px-4">
-        <input
-          data-autofocus
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === "ArrowDown") {
-              event.preventDefault();
-              setActive((i) => Math.min(i + 1, results.length - 1));
-            } else if (event.key === "ArrowUp") {
-              event.preventDefault();
-              setActive((i) => Math.max(i - 1, 0));
-            } else if (event.key === "Enter" && results[active]) {
-              event.preventDefault();
-              run(results[active]);
-            }
-          }}
-          placeholder="Type a port number or a command"
-          aria-label="Command palette"
-          spellCheck={false}
-          autoComplete="off"
-          className="h-14 w-full bg-transparent text-[16px] outline-none placeholder:text-ink-muted"
-        />
-      </div>
+  const names = useMemo(() => [...new Set(groups.map((g) => g.name))], [groups]);
 
-      {results.length === 0 ? (
-        <p className="px-4 py-8 text-center text-ink-muted">
-          No command matches “{query}”.
-        </p>
-      ) : (
-        <ul ref={listRef} className="max-h-[46vh] overflow-y-auto p-1.5">
-          {results.map((command, index) => (
-            <li key={command.id}>
-              <button
-                type="button"
-                data-index={index}
-                onMouseEnter={() => setActive(index)}
-                onClick={() => run(command)}
-                className={cn(
-                  "flex w-full items-baseline gap-3 rounded-lg px-2.5 py-2 text-left",
-                  index === active && "bg-raised",
-                )}
+  // One entry per process-and-port: a server listening on both IPv4 and IPv6 is
+  // two sockets but only one thing the user can act on.
+  const processEntries = useMemo(() => {
+    const seen = new Set<string>();
+    return ports.filter((p) => {
+      const key = `${p.pid}:${p.port}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [ports]);
+
+  const routes: [Route, string][] = [
+    ["dashboard", "Open Dashboard"],
+    ["ports", "Open Ports"],
+    ["processes", "Open Processes"],
+    ["favorites", "Open Favourites"],
+    ["history", "Open History"],
+    ["settings", "Open Settings"],
+  ];
+
+  return (
+    <CommandDialog
+      open={open}
+      onOpenChange={setOpen}
+      title="Commands"
+      description="Type a port number or a command"
+    >
+      <CommandInput
+        value={query}
+        onValueChange={setQuery}
+        placeholder="Type a port number or a command"
+      />
+      <CommandList>
+        <CommandEmpty>No command matches “{query}”.</CommandEmpty>
+
+        {/* A bare number is almost always "deal with this port". */}
+        {port !== null && (
+          <CommandGroup heading={`Port ${port}`}>
+            <CommandItem
+              value={`kill port ${port}`}
+              onSelect={() => run(() => killPort(port))}
+            >
+              <span>Kill port {port}</span>
+              <span className="ml-auto text-[12.5px] text-ink-muted">
+                {ports.find((p) => p.port === port)
+                  ? `held by ${ports.find((p) => p.port === port)!.processName}`
+                  : "nothing is using it"}
+              </span>
+            </CommandItem>
+            <CommandItem
+              value={`check port ${port}`}
+              onSelect={() =>
+                run(() => {
+                  navigate("dashboard");
+                  window.setTimeout(() => {
+                    document
+                      .querySelector<HTMLInputElement>("input[aria-label='Port number']")
+                      ?.focus();
+                  }, 0);
+                })
+              }
+            >
+              <span>Check port {port}</span>
+              <span className="ml-auto text-[12.5px] text-ink-muted">
+                open it in Quick Kill
+              </span>
+            </CommandItem>
+          </CommandGroup>
+        )}
+
+        {range && (
+          <CommandGroup heading="Range">
+            <CommandItem
+              value={`scan ${range[0]} ${range[1]}`}
+              onSelect={() =>
+                run(() => {
+                  navigate("ports");
+                  toast(
+                    "info",
+                    `Type ${range[0]}-${range[1]} in the Ports search to scan it.`,
+                  );
+                })
+              }
+            >
+              Scan ports {range[0]}–{range[1]}
+            </CommandItem>
+          </CommandGroup>
+        )}
+
+        {processEntries.length > 0 && (
+          <CommandGroup heading="Processes">
+            {processEntries.slice(0, 40).map((entry) => (
+              <CommandItem
+                key={`${entry.pid}:${entry.port}`}
+                value={`${entry.processName} port ${entry.port} pid ${entry.pid}`}
+                onSelect={() => run(() => openDetails(entry.pid))}
               >
-                <span className="min-w-0 flex-1 truncate">{command.label}</span>
-                {command.hint && (
-                  <span className="shrink-0 text-[12.5px] text-ink-muted">
-                    {command.hint}
+                <span>
+                  {entry.processName} on port {entry.port}
+                </span>
+                <span className="ml-auto text-[12.5px] text-ink-muted">
+                  PID {entry.pid}
+                </span>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+
+        {/* FR-020 — "Kill all Node processes". */}
+        {names.length > 0 && (
+          <CommandGroup heading="Bulk">
+            {names.map((name) => {
+              const targets = ports.filter((p) => p.processName === name);
+              return (
+                <CommandItem
+                  key={name}
+                  value={`kill every ${name} process`}
+                  onSelect={() => run(() => killByName(name, targets))}
+                >
+                  <span>Kill every {name} process</span>
+                  <span className="ml-auto text-[12.5px] text-ink-muted">
+                    {targets.length} holding a port
                   </span>
-                )}
-              </button>
-            </li>
+                </CommandItem>
+              );
+            })}
+          </CommandGroup>
+        )}
+
+        <CommandSeparator />
+
+        <CommandGroup heading="Go to">
+          {routes.map(([route, label]) => (
+            <CommandItem
+              key={route}
+              value={label}
+              onSelect={() => run(() => navigate(route))}
+            >
+              {label}
+            </CommandItem>
           ))}
-        </ul>
-      )}
-    </Dialog>
+        </CommandGroup>
+
+        <CommandGroup heading="Actions">
+          <CommandItem value="refresh ports" onSelect={() => run(() => void refresh())}>
+            Refresh ports
+          </CommandItem>
+          <CommandItem
+            value="switch theme"
+            onSelect={() =>
+              run(() => void updateSettings({ theme: theme === "dark" ? "light" : "dark" }))
+            }
+          >
+            {theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+          </CommandItem>
+        </CommandGroup>
+      </CommandList>
+    </CommandDialog>
   );
 }

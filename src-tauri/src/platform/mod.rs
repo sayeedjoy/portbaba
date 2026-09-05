@@ -9,9 +9,7 @@
 //! enrichment lookups, so those live behind [`PortProvider`] implementations
 //! selected at compile time.
 
-use netstat2::{
-    AddressFamilyFlags, ProtocolFlags, ProtocolSocketInfo, TcpState, get_sockets_info,
-};
+use netstat2::{get_sockets_info, AddressFamilyFlags, ProtocolFlags, ProtocolSocketInfo, TcpState};
 
 use crate::error::{Error, Result};
 use crate::models::Protocol;
@@ -84,7 +82,7 @@ pub trait PortProvider {
 }
 
 pub fn provider() -> Platform {
-    Platform::default()
+    Platform
 }
 
 /// Shared socket enumeration used by every backend.
@@ -99,7 +97,9 @@ pub(crate) fn enumerate_sockets(include_udp: bool) -> Result<Vec<RawSocket>> {
     }
 
     let sockets = get_sockets_info(af_flags, proto_flags).map_err(|e| match e {
-        netstat2::error::Error::OsError(io) if io.kind() == std::io::ErrorKind::PermissionDenied => {
+        netstat2::error::Error::OsError(io)
+            if io.kind() == std::io::ErrorKind::PermissionDenied =>
+        {
             Error::PermissionDenied(
                 "The operating system refused to list network sockets.".to_string(),
             )

@@ -1,7 +1,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { Star } from "lucide-react";
 
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { useKill } from "@/hooks/useKill";
 import { cn, parsePort } from "@/lib/utils";
 import * as api from "@/services/tauri";
@@ -174,13 +174,13 @@ export const QuickKill = forwardRef<QuickKillHandle>(function QuickKill(_props, 
 
         <div className="flex shrink-0 gap-2">
           {occupied && allowForceKill && (
-            <Button size="lg" variant="quiet" onClick={() => submit(true)}>
+            <Button size="lg" variant="outline" onClick={() => submit(true)}>
               Force kill
             </Button>
           )}
           <Button
             size="lg"
-            variant="danger"
+            variant="destructive"
             disabled={port === null || !occupied}
             onClick={() => submit(false)}
           >

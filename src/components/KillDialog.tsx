@@ -1,45 +1,73 @@
+import { useRef } from "react";
 import { ShieldAlert, TriangleAlert } from "lucide-react";
 
-import { Button } from "@/components/ui/Button";
-import { Dialog } from "@/components/ui/Dialog";
-import { useKill } from "@/hooks/useKill";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { buttonVariants } from "@/components/ui/button";
 import { cn, pluralise } from "@/lib/utils";
+import { useKill } from "@/hooks/useKill";
 import { useSettings } from "@/stores/settingsStore";
 import { useUi } from "@/stores/uiStore";
 
 /**
  * FR-007 — the confirmation step, and FR-008's warning when the target turns
  * out to be something the operating system needs.
+ *
+ * This is an AlertDialog rather than a plain Dialog: it interrupts a
+ * destructive action, so it should not be dismissible by clicking away.
  */
 export function KillDialog() {
   const request = useUi((s) => s.killRequest);
   const dismiss = useUi((s) => s.dismissKill);
   const protectSystem = useSettings((s) => s.settings.protectSystemProcesses);
   const { execute } = useKill();
+  const confirmRef = useRef<HTMLButtonElement>(null);
 
   if (!request) return null;
 
   const protectedTargets = request.targets.filter((t) => t.protected);
   const blocked = protectSystem && protectedTargets.length > 0;
-  const ports = [...new Set(request.targets.map((t) => t.port))].sort((a, b) => a - b);
+  const ports = [...new Set(request.targets.map((t) => t.port))];
   const pids = [...new Set(request.targets.map((t) => t.pid))];
 
   return (
-    <Dialog open onClose={dismiss} labelledBy="kill-dialog-title">
-      <div className="p-6">
-        <h2 id="kill-dialog-title" className="text-[19px] font-semibold tracking-[-0.01em]">
-          {request.force ? "Force kill" : "Terminate"} {request.title.toLowerCase()}?
-        </h2>
+    <AlertDialog open onOpenChange={(open) => !open && dismiss()}>
+      <AlertDialogContent
+        // Radix focuses Cancel by default. The dialog is only reached by
+        // clicking a kill button (or pressing Enter in Quick Kill), so focusing
+        // the confirm button keeps §52's "under three interactions" flow —
+        // otherwise Enter would cancel the action Enter just started.
+        onOpenAutoFocus={(event) => {
+          event.preventDefault();
+          confirmRef.current?.focus();
+        }}
+      >
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            {request.force ? "Force kill" : "Terminate"} {request.title.toLowerCase()}?
+          </AlertDialogTitle>
+          <AlertDialogDescription className="sr-only">
+            Review what will be stopped before confirming.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
 
         {/* What exactly is about to happen. */}
-        <div className="mt-4 overflow-hidden rounded-xl border border-hairline">
+        <div className="overflow-hidden rounded-xl border">
           {request.targets.length === 0 ? (
             <p className="px-4 py-3 text-ink-soft">
               Nothing is holding port {request.port} right now. Running this will simply
               confirm it is free.
             </p>
           ) : (
-            <ul className="divide-y divide-[var(--hairline)]">
+            <ul className="divide-y">
               {request.targets.slice(0, 6).map((target) => (
                 <li
                   key={target.id}
@@ -99,29 +127,26 @@ export function KillDialog() {
           />
         )}
 
-        {/* A short, factual recap — plain text rather than decorative meta. */}
         {request.targets.length > 1 && (
-          <p className="mt-3 text-[13px] text-ink-muted">
+          <p className="text-[13px] text-ink-muted">
             {pluralise(pids.length, "process", "processes")} across{" "}
             {pluralise(ports.length, "port")}.
           </p>
         )}
 
-        <div className="mt-6 flex justify-end gap-2">
-          <Button onClick={dismiss} variant="quiet">
-            Cancel
-          </Button>
-          <Button
-            data-autofocus
-            variant="danger"
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            ref={confirmRef}
             disabled={blocked}
+            className={cn(buttonVariants({ variant: "destructive" }))}
             onClick={() => void execute(request)}
           >
             {request.force ? "Force kill" : "Terminate"}
-          </Button>
-        </div>
-      </div>
-    </Dialog>
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 
@@ -139,7 +164,7 @@ function Warning({
   return (
     <div
       className={cn(
-        "mt-4 flex gap-3 rounded-xl p-3.5",
+        "flex gap-3 rounded-xl p-3.5",
         tone === "protected" ? "bg-[var(--protected-wash)]" : "bg-raised",
       )}
     >

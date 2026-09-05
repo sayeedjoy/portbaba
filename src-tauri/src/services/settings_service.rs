@@ -273,7 +273,12 @@ impl Store {
         self.with(|s| s.favorites.clone())
     }
 
-    pub fn add_favorite(&self, port: u16, label: String, description: String) -> Result<Vec<FavoritePort>> {
+    pub fn add_favorite(
+        &self,
+        port: u16,
+        label: String,
+        description: String,
+    ) -> Result<Vec<FavoritePort>> {
         self.mutate(|s| {
             if let Some(existing) = s.favorites.iter_mut().find(|f| f.port == port) {
                 existing.label = label;
@@ -356,4 +361,3 @@ impl std::fmt::Debug for Store {
         f.debug_struct("Store").field("path", &self.path).finish()
     }
 }
-

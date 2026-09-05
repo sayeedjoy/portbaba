@@ -21,7 +21,10 @@
     "noFallthroughCasesInSwitch": true,
 
     /* Path alias — resolved relative to this file (no baseUrl needed). */
-    "paths": { "@/*": ["./src/*"] }
+    "paths": {
+      "@/*": ["./src/*"],
+      "cn": ["./src/lib/utils.ts"]
+    }
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]

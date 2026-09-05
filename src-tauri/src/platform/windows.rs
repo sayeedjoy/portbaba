@@ -14,7 +14,7 @@ use std::process::Command;
 
 use sysinfo::{Pid, ProcessRefreshKind, ProcessesToUpdate, System};
 
-use super::{PortProvider, RawSocket, SignalOutcome, Termination, enumerate_sockets};
+use super::{enumerate_sockets, PortProvider, RawSocket, SignalOutcome, Termination};
 use crate::error::Result;
 
 /// Do not let the user shoot Windows in the foot (FR-008).

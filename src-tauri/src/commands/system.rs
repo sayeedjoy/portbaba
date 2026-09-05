@@ -2,16 +2,14 @@
 
 use tauri::{AppHandle, Runtime, State};
 
-use crate::error::{Error, Result, validate_port};
+use crate::error::{validate_port, Error, Result};
 use crate::models::SystemInfo;
-use crate::services::settings_service::{
-    FavoritePort, HistoryEntry, PortPreset, Settings, Store,
-};
+use crate::services::settings_service::{FavoritePort, HistoryEntry, PortPreset, Settings, Store};
 
 /// §49 — lets the UI explain up front whether elevation is available.
 #[tauri::command(async)]
 pub fn get_system_info<R: Runtime>(app: AppHandle<R>) -> Result<SystemInfo> {
-    use crate::platform::{PortProvider, provider};
+    use crate::platform::{provider, PortProvider};
 
     Ok(SystemInfo {
         os: std::env::consts::OS.to_string(),
@@ -66,7 +64,11 @@ pub fn add_favorite<R: Runtime>(
             trimmed.to_string()
         }
     };
-    let favorites = store.add_favorite(port, label, description.unwrap_or_default().trim().to_string())?;
+    let favorites = store.add_favorite(
+        port,
+        label,
+        description.unwrap_or_default().trim().to_string(),
+    )?;
     crate::rebuild_tray_menu(&app);
     Ok(favorites)
 }

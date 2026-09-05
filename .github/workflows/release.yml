@@ -1,0 +1,101 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  # Lets you produce installers from a branch without cutting a tag.
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    # Installers cannot be cross-compiled: each one needs its own platform's
+    # toolchain (WiX and the MSVC linker, hdiutil and codesign, dpkg). So build
+    # each on its own runner and collect them into one release.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS (universal)
+            platform: macos-latest
+            args: --target universal-apple-darwin
+          - name: Windows (x64)
+            platform: windows-latest
+            args: ""
+          # Pinned rather than ubuntu-latest on purpose: the AppImage and .deb
+          # link against the build machine's glibc, so building on the oldest
+          # supported image is what makes them run on older distributions.
+          - name: Linux (x64)
+            platform: ubuntu-22.04
+            args: ""
+
+    runs-on: ${{ matrix.platform }}
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install Linux dependencies
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            libayatana-appindicator3-dev \
+            libxdo-dev \
+            libssl-dev \
+            build-essential \
+            patchelf \
+            file
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ./src-tauri -> target
+
+      - run: pnpm install --frozen-lockfile
+
+      - uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Code signing. Every one of these is optional: without them the build
+          # still succeeds, it just produces unsigned installers that warn on
+          # first launch. Add them as repository secrets to sign for real.
+          #
+          # macOS — Developer ID certificate and notarization:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        with:
+          tagName: ${{ github.ref_type == 'tag' && github.ref_name || format('v{0}-dev', github.run_number) }}
+          releaseName: Port Killer ${{ github.ref_type == 'tag' && github.ref_name || 'dev build' }}
+          releaseBody: |
+            Download the installer for your platform below.
+
+            - **macOS** — `.dmg` (universal: Apple Silicon and Intel)
+            - **Windows** — `-setup.exe` installs per-user and brings its own WebView2; the `.msi` is for managed deployment
+            - **Linux** — `.AppImage`, `.deb`
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}

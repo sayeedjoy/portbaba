@@ -1,5 +1,5 @@
 import { Empty, PageHeader, Panel } from "@/components/AppShell";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { cn, formatClock, formatDate, pluralise } from "@/lib/utils";
 import * as api from "@/services/tauri";
 import { useData } from "@/stores/dataStore";

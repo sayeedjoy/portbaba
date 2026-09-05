@@ -1,9 +1,18 @@
+import type { ReactNode } from "react";
+
 import { PageHeader, Panel } from "@/components/AppShell";
-import { Select } from "@/components/ui/Select";
-import { Toggle } from "@/components/ui/Toggle";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { shortcutLabel } from "@/lib/utils";
 import { useSettings } from "@/stores/settingsStore";
-import type { ReactNode } from "react";
+import type { ThemeChoice } from "@/types/system";
 
 /** §38 — every switch the SRS asks for, grouped the way it groups them. */
 export function Settings() {
@@ -16,108 +25,176 @@ export function Settings() {
       <PageHeader title="Settings" />
 
       <Group title="General">
-        <Toggle
+        <Row
+          id="launch-at-startup"
           label="Launch at startup"
           hint="Open Port Killer when you log in."
-          checked={settings.launchAtStartup}
-          onChange={(launchAtStartup) => void update({ launchAtStartup })}
-        />
-        <Toggle
+        >
+          <Switch
+            id="launch-at-startup"
+            checked={settings.launchAtStartup}
+            onCheckedChange={(launchAtStartup) => void update({ launchAtStartup })}
+          />
+        </Row>
+        <Row
+          id="close-to-tray"
           label="Keep running in the tray"
           hint="Closing the window leaves Port Killer in the tray instead of quitting."
-          checked={settings.closeToTray}
-          onChange={(closeToTray) => void update({ closeToTray })}
-        />
-        <Toggle
+        >
+          <Switch
+            id="close-to-tray"
+            checked={settings.closeToTray}
+            onCheckedChange={(closeToTray) => void update({ closeToTray })}
+          />
+        </Row>
+        <Row
+          id="start-minimized"
           label="Start minimised"
           hint="Launch straight to the tray without opening the window."
-          checked={settings.startMinimized}
-          onChange={(startMinimized) => void update({ startMinimized })}
-        />
+        >
+          <Switch
+            id="start-minimized"
+            checked={settings.startMinimized}
+            onCheckedChange={(startMinimized) => void update({ startMinimized })}
+          />
+        </Row>
       </Group>
 
       <Group title="Port scanner">
-        <Toggle
+        <Row
+          id="auto-refresh"
           label="Refresh automatically"
           hint="Re-scan on an interval so the table stays current."
-          checked={settings.autoRefresh}
-          onChange={(autoRefresh) => void update({ autoRefresh })}
-        />
-        <Select
+        >
+          <Switch
+            id="auto-refresh"
+            checked={settings.autoRefresh}
+            onCheckedChange={(autoRefresh) => void update({ autoRefresh })}
+          />
+        </Row>
+        <Row
+          id="refresh-interval"
           label="Refresh interval"
           hint="How often to re-read the socket table."
-          value={settings.refreshInterval}
-          disabled={!settings.autoRefresh}
-          onChange={(refreshInterval) => void update({ refreshInterval })}
-          options={[
-            { value: 1, label: "1 second" },
-            { value: 2, label: "2 seconds" },
-            { value: 5, label: "5 seconds" },
-            { value: 10, label: "10 seconds" },
-            { value: 30, label: "30 seconds" },
-          ]}
-        />
-        <Toggle
-          label="Show UDP"
-          hint="Include UDP sockets alongside TCP."
-          checked={settings.showUdp}
-          onChange={(showUdp) => void update({ showUdp })}
-        />
-        <Toggle
+        >
+          <Select
+            value={String(settings.refreshInterval)}
+            disabled={!settings.autoRefresh}
+            onValueChange={(value) => void update({ refreshInterval: Number(value) })}
+          >
+            <SelectTrigger id="refresh-interval" className="w-[150px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1">1 second</SelectItem>
+              <SelectItem value="2">2 seconds</SelectItem>
+              <SelectItem value="5">5 seconds</SelectItem>
+              <SelectItem value="10">10 seconds</SelectItem>
+              <SelectItem value="30">30 seconds</SelectItem>
+            </SelectContent>
+          </Select>
+        </Row>
+        <Row id="show-udp" label="Show UDP" hint="Include UDP sockets alongside TCP.">
+          <Switch
+            id="show-udp"
+            checked={settings.showUdp}
+            onCheckedChange={(showUdp) => void update({ showUdp })}
+          />
+        </Row>
+        <Row
+          id="show-established"
           label="Show established connections"
           hint="Include outbound and accepted connections, not just listening sockets."
-          checked={settings.showEstablished}
-          onChange={(showEstablished) => void update({ showEstablished })}
-        />
+        >
+          <Switch
+            id="show-established"
+            checked={settings.showEstablished}
+            onCheckedChange={(showEstablished) => void update({ showEstablished })}
+          />
+        </Row>
       </Group>
 
       <Group title="Safety">
-        <Toggle
+        <Row
+          id="confirm-before-kill"
           label="Confirm before terminating"
           hint="Ask first, so a stray click cannot stop a running server."
-          checked={settings.confirmBeforeKill}
-          onChange={(confirmBeforeKill) => void update({ confirmBeforeKill })}
-        />
-        <Toggle
+        >
+          <Switch
+            id="confirm-before-kill"
+            checked={settings.confirmBeforeKill}
+            onCheckedChange={(confirmBeforeKill) => void update({ confirmBeforeKill })}
+          />
+        </Row>
+        <Row
+          id="allow-force-kill"
           label="Allow force kill"
           hint="Offer the immediate stop that skips a clean shutdown."
-          checked={settings.allowForceKill}
-          onChange={(allowForceKill) => void update({ allowForceKill })}
-        />
-        <Toggle
+        >
+          <Switch
+            id="allow-force-kill"
+            checked={settings.allowForceKill}
+            onCheckedChange={(allowForceKill) => void update({ allowForceKill })}
+          />
+        </Row>
+        <Row
+          id="protect-system"
           label="Protect system processes"
           hint="Refuse to terminate processes the operating system depends on."
-          checked={settings.protectSystemProcesses}
-          onChange={(protectSystemProcesses) => void update({ protectSystemProcesses })}
-        />
+        >
+          <Switch
+            id="protect-system"
+            checked={settings.protectSystemProcesses}
+            onCheckedChange={(protectSystemProcesses) =>
+              void update({ protectSystemProcesses })
+            }
+          />
+        </Row>
       </Group>
 
       <Group title="Notifications and shortcuts">
-        <Toggle
+        <Row
+          id="notifications"
           label="Show desktop notifications"
           hint="Report the result of a kill even when the window is hidden."
-          checked={settings.notifications}
-          onChange={(notifications) => void update({ notifications })}
-        />
-        <Toggle
+        >
+          <Switch
+            id="notifications"
+            checked={settings.notifications}
+            onCheckedChange={(notifications) => void update({ notifications })}
+          />
+        </Row>
+        <Row
+          id="global-shortcut"
           label="Global Quick Kill shortcut"
           hint={`Press ${shortcutLabel("Mod+Shift+K")} from any application to open Quick Kill.`}
-          checked={settings.globalShortcutEnabled}
-          onChange={(globalShortcutEnabled) => void update({ globalShortcutEnabled })}
-        />
+        >
+          <Switch
+            id="global-shortcut"
+            checked={settings.globalShortcutEnabled}
+            onCheckedChange={(globalShortcutEnabled) =>
+              void update({ globalShortcutEnabled })
+            }
+          />
+        </Row>
       </Group>
 
       <Group title="Appearance">
-        <Select
-          label="Theme"
-          value={settings.theme}
-          onChange={(theme) => void update({ theme })}
-          options={[
-            { value: "system", label: "Match system" },
-            { value: "light", label: "Light" },
-            { value: "dark", label: "Dark" },
-          ]}
-        />
+        <Row id="theme" label="Theme">
+          <Select
+            value={settings.theme}
+            onValueChange={(theme) => void update({ theme: theme as ThemeChoice })}
+          >
+            <SelectTrigger id="theme" className="w-[150px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="system">Match system</SelectItem>
+              <SelectItem value="light">Light</SelectItem>
+              <SelectItem value="dark">Dark</SelectItem>
+            </SelectContent>
+          </Select>
+        </Row>
       </Group>
 
       {system && (
@@ -138,8 +215,33 @@ function Group({ title, children }: { title: string; children: ReactNode }) {
     <section className="mb-5">
       <h2 className="mb-2 font-medium">{title}</h2>
       <Panel className="px-5 py-1">
-        <div className="divide-y divide-[var(--hairline)]">{children}</div>
+        <div className="divide-y">{children}</div>
       </Panel>
     </section>
+  );
+}
+
+/** One setting: the label is tied to its control, so the whole row is clickable. */
+function Row({
+  id,
+  label,
+  hint,
+  children,
+}: {
+  id: string;
+  label: string;
+  hint?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-6 py-3.5">
+      <div className="min-w-0">
+        <Label htmlFor={id} className="cursor-pointer">
+          {label}
+        </Label>
+        {hint && <p className="mt-0.5 text-[13px] text-ink-muted">{hint}</p>}
+      </div>
+      <div className="mt-0.5 shrink-0">{children}</div>
+    </div>
   );
 }

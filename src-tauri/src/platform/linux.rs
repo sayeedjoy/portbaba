@@ -4,7 +4,7 @@
 //! than shelling out to `ss -lptn`, and termination uses POSIX signals.
 
 use super::unix;
-use super::{PortProvider, RawSocket, SignalOutcome, Termination, enumerate_sockets};
+use super::{enumerate_sockets, PortProvider, RawSocket, SignalOutcome, Termination};
 use crate::error::Result;
 
 /// Init systems and core daemons that must not be terminated (FR-008).

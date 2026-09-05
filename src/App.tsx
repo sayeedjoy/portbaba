@@ -6,7 +6,8 @@ import { KillDialog } from "@/components/KillDialog";
 import { ProcessDetails } from "@/components/ProcessDetails";
 import type { QuickKillHandle } from "@/components/QuickKill";
 import type { SearchHandle } from "@/components/SearchBar";
-import { Toasts } from "@/components/Toasts";
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { useHotkeys } from "@/hooks/useHotkeys";
 import { usePortSync } from "@/hooks/usePorts";
 import { Dashboard } from "@/pages/Dashboard";
@@ -57,7 +58,7 @@ export default function App() {
   }
 
   return (
-    <>
+    <TooltipProvider delayDuration={400}>
       <AppShell>
         {route === "dashboard" && <Dashboard ref={quickKillRef} />}
         {route === "ports" && <Ports ref={searchRef} />}
@@ -70,7 +71,7 @@ export default function App() {
       <CommandPalette />
       <KillDialog />
       <ProcessDetails />
-      <Toasts />
-    </>
+      <Toaster position="bottom-right" richColors closeButton />
+    </TooltipProvider>
   );
 }

@@ -1,3 +1,5 @@
+import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type { PortState } from "@/types/system";
 
@@ -9,52 +11,56 @@ import type { PortState } from "@/types/system";
 const STATES: Record<PortState, { label: string; className: string }> = {
   available: {
     label: "Available",
-    className: "text-[var(--free)] bg-[var(--free-wash)]",
+    className: "border-transparent bg-[var(--free-wash)] text-[var(--free)]",
   },
   listening: {
     label: "Listening",
-    className: "text-[var(--occupied)] bg-[var(--occupied-wash)]",
+    className:
+      "border-transparent bg-[var(--occupied-wash)] text-[var(--occupied)]",
   },
   established: {
     label: "Established",
-    className: "text-ink-soft bg-raised",
+    className: "border-transparent bg-raised text-ink-soft",
   },
   occupied: {
     label: "Occupied",
-    className: "text-[var(--occupied)] bg-[var(--occupied-wash)]",
+    className:
+      "border-transparent bg-[var(--occupied-wash)] text-[var(--occupied)]",
   },
   unknown: {
     label: "Unknown owner",
-    className: "text-ink-muted bg-raised",
+    className: "border-transparent bg-raised text-ink-muted",
   },
 };
 
 export function StateTag({ state, className }: { state: PortState; className?: string }) {
   const { label, className: tone } = STATES[state];
   return (
-    <span
-      className={cn(
-        "inline-flex h-[22px] items-center rounded-md px-2 text-[12.5px] font-medium",
-        tone,
-        className,
-      )}
-    >
+    <Badge variant="outline" className={cn("font-medium", tone, className)}>
       {label}
-    </span>
+    </Badge>
   );
 }
 
 /** FR-008 — a system process is flagged wherever it appears. */
 export function ProtectedTag({ className }: { className?: string }) {
   return (
-    <span
-      title="System process — Port Killer will not terminate this by default"
-      className={cn(
-        "inline-flex h-[22px] items-center rounded-md bg-[var(--protected-wash)] px-2 text-[12.5px] font-medium text-[var(--protected)]",
-        className,
-      )}
-    >
-      System
-    </span>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Badge
+          variant="outline"
+          className={cn(
+            "border-transparent bg-[var(--protected-wash)] font-medium text-[var(--protected)]",
+            className,
+          )}
+        >
+          System
+        </Badge>
+      </TooltipTrigger>
+      <TooltipContent className="max-w-64">
+        The operating system depends on this process. Port Killer will not
+        terminate it unless you turn off protection in Settings → Safety.
+      </TooltipContent>
+    </Tooltip>
   );
 }

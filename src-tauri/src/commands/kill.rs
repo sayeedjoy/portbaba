@@ -10,12 +10,12 @@ use std::time::{Duration, Instant};
 
 use tauri::{AppHandle, Emitter, Manager, Runtime, State};
 
-use crate::error::{Error, Result, validate_pid, validate_port};
+use crate::error::{validate_pid, validate_port, Error, Result};
 use crate::models::{KillOutcome, KillResult};
-use crate::platform::{PortProvider, SignalOutcome, Termination, provider};
+use crate::platform::{provider, PortProvider, SignalOutcome, Termination};
 use crate::services::port_service;
 use crate::services::process_service::{self, ProcessSnapshot};
-use crate::services::settings_service::{HistoryEntry, Store, new_id, now_millis};
+use crate::services::settings_service::{new_id, now_millis, HistoryEntry, Store};
 
 /// How long we wait for a process to actually go away before reporting back.
 const GRACEFUL_WAIT: Duration = Duration::from_millis(1500);
@@ -147,7 +147,9 @@ pub fn kill_processes_by_name<R: Runtime>(
 ) -> Result<Vec<KillResult>> {
     let needle = name.trim().to_ascii_lowercase();
     if needle.is_empty() {
-        return Err(Error::InvalidInput("No process name was given.".to_string()));
+        return Err(Error::InvalidInput(
+            "No process name was given.".to_string(),
+        ));
     }
     let force = force.unwrap_or(false);
 
@@ -182,12 +184,7 @@ pub fn kill_processes_by_name<R: Runtime>(
 // ---------------------------------------------------------------------------
 
 /// The single place where a process is actually signalled.
-fn terminate(
-    store: &Store,
-    pid: u32,
-    port: Option<u16>,
-    force: bool,
-) -> Result<KillResult> {
+fn terminate(store: &Store, pid: u32, port: Option<u16>, force: bool) -> Result<KillResult> {
     let pid = validate_pid(pid)?; // SR-003
     let settings = store.settings();
 
@@ -425,10 +422,7 @@ fn notification_text(results: &[KillResult]) -> Option<String> {
         [single] => Some(single.message.clone()),
         many => {
             let freed = many.iter().filter(|r| r.success).count();
-            Some(format!(
-                "{freed} of {} processes terminated.",
-                many.len()
-            ))
+            Some(format!("{freed} of {} processes terminated.", many.len()))
         }
     }
 }

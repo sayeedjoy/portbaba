@@ -10,7 +10,7 @@ use std::path::Path;
 use sysinfo::{Pid, ProcessRefreshKind, ProcessesToUpdate, System, UpdateKind, Users};
 
 use crate::models::ProjectInfo;
-use crate::platform::{PortProvider, provider};
+use crate::platform::{provider, PortProvider};
 
 /// A flattened, owned view of one `sysinfo::Process`.
 #[derive(Debug, Clone)]
@@ -207,7 +207,11 @@ const SERVICE_HINTS: &[(&str, &str)] = &[
     ("minio", "MinIO"),
 ];
 
-fn detect_framework(command: Option<&str>, process_name: &str, cwd: Option<&str>) -> Option<String> {
+fn detect_framework(
+    command: Option<&str>,
+    process_name: &str,
+    cwd: Option<&str>,
+) -> Option<String> {
     let haystack = command.unwrap_or_default().to_ascii_lowercase();
     if let Some((_, label)) = FRAMEWORK_HINTS
         .iter()

@@ -19,9 +19,9 @@ use services::settings_service::{Settings, Store};
 /// against real sockets without going through the Tauri runtime.
 #[doc(hidden)]
 pub mod testing {
-    pub use crate::services::port_service::{ScanOptions, check, check_range, scan};
-    pub use crate::services::settings_service::Store;
+    pub use crate::services::port_service::{check, check_range, scan, ScanOptions};
     pub use crate::services::process_service::detect_project;
+    pub use crate::services::settings_service::Store;
 
     pub use check as check_port;
 }
@@ -105,31 +105,31 @@ pub fn run() {
 /// mount exactly the same handlers.
 fn command_handler<R: Runtime>() -> impl Fn(tauri::ipc::Invoke<R>) -> bool + Send + Sync + 'static {
     tauri::generate_handler![
-            commands::ports::get_active_ports,
-            commands::ports::get_port_info,
-            commands::ports::check_port,
-            commands::ports::check_port_range,
-            commands::process::get_process_details,
-            commands::process::get_process_groups,
-            commands::process::find_processes_by_name,
-            commands::kill::kill_port,
-            commands::kill::kill_process,
-            commands::kill::force_kill_process,
-            commands::kill::kill_processes,
-            commands::kill::kill_processes_by_name,
-            commands::system::get_system_info,
-            commands::system::get_settings,
-            commands::system::save_settings,
-            commands::system::get_favorites,
-            commands::system::add_favorite,
-            commands::system::remove_favorite,
-            commands::system::get_presets,
-            commands::system::save_presets,
-            commands::system::reset_presets,
-            commands::system::get_history,
-            commands::system::clear_history,
-            commands::system::reveal_directory,
-        ]
+        commands::ports::get_active_ports,
+        commands::ports::get_port_info,
+        commands::ports::check_port,
+        commands::ports::check_port_range,
+        commands::process::get_process_details,
+        commands::process::get_process_groups,
+        commands::process::find_processes_by_name,
+        commands::kill::kill_port,
+        commands::kill::kill_process,
+        commands::kill::force_kill_process,
+        commands::kill::kill_processes,
+        commands::kill::kill_processes_by_name,
+        commands::system::get_system_info,
+        commands::system::get_settings,
+        commands::system::save_settings,
+        commands::system::get_favorites,
+        commands::system::add_favorite,
+        commands::system::remove_favorite,
+        commands::system::get_presets,
+        commands::system::save_presets,
+        commands::system::reset_presets,
+        commands::system::get_history,
+        commands::system::clear_history,
+        commands::system::reveal_directory,
+    ]
 }
 
 /// Registers the command surface and the local state store on a builder.
@@ -186,7 +186,9 @@ pub fn apply_settings<R: Runtime>(app: &AppHandle<R>, settings: &Settings) {
 
 #[cfg(desktop)]
 fn apply_global_shortcut<R: Runtime>(app: &AppHandle<R>, settings: &Settings) {
-    use tauri_plugin_global_shortcut::{GlobalShortcut, GlobalShortcutExt, Shortcut, ShortcutState};
+    use tauri_plugin_global_shortcut::{
+        GlobalShortcut, GlobalShortcutExt, Shortcut, ShortcutState,
+    };
 
     if app.try_state::<GlobalShortcut<R>>().is_none() {
         return;
@@ -328,13 +330,12 @@ fn tray_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> {
                 )
             })
             .collect::<tauri::Result<_>>()?;
-        let refs: Vec<&dyn tauri::menu::IsMenuItem<R>> =
-            items.iter().map(|i| i as &dyn tauri::menu::IsMenuItem<_>).collect();
+        let refs: Vec<&dyn tauri::menu::IsMenuItem<R>> = items
+            .iter()
+            .map(|i| i as &dyn tauri::menu::IsMenuItem<_>)
+            .collect();
         let kill = Submenu::with_items(app, "Kill Port", true, &refs)?;
-        Menu::with_items(
-            app,
-            &[&open, &quick, &kill, &refresh, &separator, &quit],
-        )?
+        Menu::with_items(app, &[&open, &quick, &kill, &refresh, &separator, &quit])?
     };
 
     Ok(menu)
@@ -354,7 +355,10 @@ fn handle_tray_menu<R: Runtime>(app: &AppHandle<R>, event: tauri::menu::MenuEven
         }
         "tray:quit" => app.exit(0),
         id => {
-            if let Some(port) = id.strip_prefix("tray:kill:").and_then(|p| p.parse::<u16>().ok()) {
+            if let Some(port) = id
+                .strip_prefix("tray:kill:")
+                .and_then(|p| p.parse::<u16>().ok())
+            {
                 tray_kill(app.clone(), port);
             }
         }

@@ -128,7 +128,86 @@
   }
 }
 
+/* ---------------------------------------------------------------------------
+   shadcn/ui bridge
+   The components ship against a fixed set of token names. Rather than adopt
+   shadcn's default palette, point each name at the Port Killer token that
+   already means that thing — so the components inherit this app's design
+   instead of arriving with their own. These are declared once: because they
+   reference custom properties, they re-resolve per theme automatically.
+--------------------------------------------------------------------------- */
+
+:root {
+  --background: var(--ground);
+  --foreground: var(--ink);
+
+  --card: var(--panel);
+  --card-foreground: var(--ink);
+  --popover: var(--panel);
+  --popover-foreground: var(--ink);
+
+  /* The primary action is ink-on-panel, so a destructive button stays the only
+     saturated control on screen. */
+  --primary: var(--ink);
+  --primary-foreground: var(--panel);
+
+  --secondary: var(--raised);
+  --secondary-foreground: var(--ink);
+  --muted: var(--raised);
+  --muted-foreground: var(--ink-muted);
+  --accent: var(--raised);
+  --accent-foreground: var(--ink);
+
+  --destructive: var(--danger);
+  --destructive-foreground: #ffffff;
+
+  --border: var(--hairline);
+  --input: var(--hairline);
+  --ring: var(--focus);
+
+  --radius: 0.5rem;
+}
+
+/* Tailwind's `dark:` defaults to prefers-color-scheme, which would ignore an
+   explicit theme choice. Match the same three states the palette uses: an
+   explicit dark override, or the OS preference when nothing is pinned. */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *) {
+      @slot;
+    }
+  }
+}
+
 @theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
   --color-ground: var(--ground);
   --color-panel: var(--panel);
   --color-raised: var(--raised);

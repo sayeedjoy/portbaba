@@ -4,26 +4,18 @@ use std::collections::{HashMap, HashSet};
 
 use crate::error::Result;
 use crate::models::{PortInfo, PortStatus, ProcessGroup, Protocol};
-use crate::platform::{PortProvider, provider};
+use crate::platform::{provider, PortProvider};
 use crate::services::process_service::{self, ProcessSnapshot};
 
 /// What the caller wants to see — mirrors the Port Scanner settings (§38).
-#[derive(Debug, Clone, Copy, serde::Deserialize)]
+/// Both flags default to false: the useful default view is TCP listening
+/// sockets, because a developer chasing a port conflict cares about who is
+/// *bound*, not who is merely connected.
+#[derive(Debug, Clone, Copy, Default, serde::Deserialize)]
 #[serde(rename_all = "camelCase", default)]
 pub struct ScanOptions {
     pub include_udp: bool,
-    /// When false, only LISTEN sockets are returned — the default, because a
-    /// developer chasing a port conflict cares about who is *bound*.
     pub include_established: bool,
-}
-
-impl Default for ScanOptions {
-    fn default() -> Self {
-        Self {
-            include_udp: false,
-            include_established: false,
-        }
-    }
 }
 
 /// FR-001 — every port currently in use, newest information available.
@@ -128,7 +120,10 @@ fn enrich(
 
 /// FR-002 — everything bound to one port.
 pub fn ports_on(port: u16, options: ScanOptions) -> Result<Vec<PortInfo>> {
-    Ok(scan(options)?.into_iter().filter(|p| p.port == port).collect())
+    Ok(scan(options)?
+        .into_iter()
+        .filter(|p| p.port == port)
+        .collect())
 }
 
 /// FR-014 — is this port free? Always looks at TCP *and* UDP, listening and
@@ -150,7 +145,11 @@ pub fn check(port: u16) -> Result<PortStatus> {
 
 /// FR-021 — scan an inclusive range in a single socket-table pass.
 pub fn check_range(start: u16, end: u16) -> Result<Vec<PortStatus>> {
-    let (low, high) = if start <= end { (start, end) } else { (end, start) };
+    let (low, high) = if start <= end {
+        (start, end)
+    } else {
+        (end, start)
+    };
 
     let all = scan(ScanOptions {
         include_udp: true,

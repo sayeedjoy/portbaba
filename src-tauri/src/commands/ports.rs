@@ -1,6 +1,6 @@
 //! Port discovery commands (FR-001, FR-002, FR-013, FR-014, FR-021).
 
-use crate::error::{Result, validate_port};
+use crate::error::{validate_port, Result};
 use crate::models::{PortInfo, PortStatus};
 use crate::services::port_service::{self, ScanOptions};
 

@@ -1,7 +1,9 @@
 import { memo } from "react";
 
-import { Button } from "@/components/ui/Button";
-import { ProtectedTag, StateTag } from "@/components/ui/StateTag";
+import { ProtectedTag, StateTag } from "@/components/app/StateTag";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { TableCell, TableRow } from "@/components/ui/table";
 import { cn, portState } from "@/lib/utils";
 import type { PortInfo } from "@/types/system";
 
@@ -19,8 +21,8 @@ interface PortRowProps {
 
 /**
  * One socket. The coloured spine on the left is the state — a structural
- * device carrying information, so the row needs no separate status column
- * to scan quickly.
+ * device carrying information, so the row can be scanned without reading the
+ * status column.
  */
 export const PortRow = memo(function PortRow({
   port,
@@ -35,13 +37,9 @@ export const PortRow = memo(function PortRow({
   const state = portState(port);
 
   return (
-    <tr
-      className={cn(
-        "group border-b border-hairline last:border-b-0",
-        "hover:bg-raised",
-        selected && "bg-raised",
-        justFreed && "animate-freed",
-      )}
+    <TableRow
+      data-state={selected ? "selected" : undefined}
+      className={cn("group", justFreed && "animate-freed")}
       style={
         state === "listening" || state === "occupied"
           ? { boxShadow: "inset 3px 0 0 var(--occupied)" }
@@ -51,20 +49,18 @@ export const PortRow = memo(function PortRow({
       }
     >
       {selectable && (
-        <td className="w-9 pl-3">
-          <input
-            type="checkbox"
+        <TableCell className="w-9 pl-3">
+          <Checkbox
             checked={selected}
+            onCheckedChange={() => onToggleSelect(port.id)}
             aria-label={`Select ${port.processName} on port ${port.port}`}
-            onChange={() => onToggleSelect(port.id)}
-            className="h-3.5 w-3.5 accent-[var(--ink)]"
           />
-        </td>
+        </TableCell>
       )}
 
-      <td className="py-2.5 pl-4 text-[15px] font-semibold">{port.port}</td>
+      <TableCell className="pl-4 text-[15px] font-semibold">{port.port}</TableCell>
 
-      <td className="max-w-0 py-2.5 pr-4">
+      <TableCell className="max-w-0">
         <div className="flex items-center gap-2">
           <span className="truncate">{port.processName}</span>
           {port.protected && <ProtectedTag />}
@@ -77,16 +73,18 @@ export const PortRow = memo(function PortRow({
               : port.project.name}
           </p>
         )}
-      </td>
+      </TableCell>
 
-      <td className="py-2.5 pr-4 text-ink-soft">{port.pid || "—"}</td>
-      <td className="py-2.5 pr-4 text-ink-soft">{port.protocol}</td>
-      <td className="py-2.5 pr-4 font-mono text-[12.5px] text-ink-soft">{port.address}</td>
-      <td className="py-2.5 pr-4">
+      <TableCell className="text-ink-soft">{port.pid || "—"}</TableCell>
+      <TableCell className="text-ink-soft">{port.protocol}</TableCell>
+      <TableCell className="font-mono text-[12.5px] text-ink-soft">
+        {port.address}
+      </TableCell>
+      <TableCell>
         <StateTag state={state} />
-      </td>
+      </TableCell>
 
-      <td className="py-2.5 pr-3">
+      <TableCell className="pr-3">
         <div className="flex justify-end gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
           {port.pid > 0 ? (
             <>
@@ -98,18 +96,16 @@ export const PortRow = memo(function PortRow({
                   Force
                 </Button>
               )}
-              <Button size="sm" variant="quiet" onClick={() => onKill(port, false)}>
+              <Button size="sm" variant="outline" onClick={() => onKill(port, false)}>
                 Terminate
               </Button>
             </>
           ) : (
             // §49 — the socket is real but its owner is not ours to see.
-            <span className="pr-1 text-[13px] text-ink-muted">
-              Owner not visible
-            </span>
+            <span className="pr-1 text-[13px] text-ink-muted">Owner not visible</span>
           )}
         </div>
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   );
 });

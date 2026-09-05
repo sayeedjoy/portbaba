@@ -1,6 +1,6 @@
 //! Process commands (FR-003, FR-016, FR-017, FR-018, §35).
 
-use crate::error::{Error, Result, validate_pid};
+use crate::error::{validate_pid, Error, Result};
 use crate::models::{ProcessGroup, ProcessInfo};
 use crate::services::port_service::{self, ScanOptions};
 use crate::services::process_service;

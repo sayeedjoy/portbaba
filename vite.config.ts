@@ -13,6 +13,9 @@ export default defineConfig(() => ({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
+      // shadcn components import the class merger as a bare "cn" specifier.
+      // Point it at ours (clsx + tailwind-merge) so there is one implementation.
+      cn: fileURLToPath(new URL("./src/lib/utils.ts", import.meta.url)),
     },
   },
 

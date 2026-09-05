@@ -4,7 +4,7 @@
 //! `lsof -nP -iTCP -sTCP:LISTEN`, and termination uses POSIX signals directly.
 
 use super::unix;
-use super::{PortProvider, RawSocket, SignalOutcome, Termination, enumerate_sockets};
+use super::{enumerate_sockets, PortProvider, RawSocket, SignalOutcome, Termination};
 use crate::error::Result;
 
 /// Processes macOS relies on. Killing any of these destabilises the session.

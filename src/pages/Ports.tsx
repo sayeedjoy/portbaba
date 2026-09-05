@@ -3,8 +3,8 @@ import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import { Empty, PageHeader, Panel } from "@/components/AppShell";
 import { PortTable } from "@/components/PortTable";
 import { SearchBar, type SearchHandle } from "@/components/SearchBar";
-import { Button } from "@/components/ui/Button";
-import { StateTag } from "@/components/ui/StateTag";
+import { Button } from "@/components/ui/button";
+import { StateTag } from "@/components/app/StateTag";
 import { useFilteredPorts } from "@/hooks/usePorts";
 import { useKill } from "@/hooks/useKill";
 import { parseRange, pluralise } from "@/lib/utils";
@@ -77,7 +77,7 @@ export const Ports = forwardRef<SearchHandle>(function Ports(_props, ref) {
             )}
             <Button
               size="sm"
-              variant="danger"
+              variant="destructive"
               onClick={() => killSelection(selected, false)}
             >
               Kill selected

@@ -7,9 +7,9 @@
 
 use std::net::TcpListener;
 
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use tauri::ipc::{CallbackFn, InvokeBody};
-use tauri::test::{INVOKE_KEY, mock_builder, mock_context, noop_assets};
+use tauri::test::{mock_builder, mock_context, noop_assets, INVOKE_KEY};
 use tauri::webview::InvokeRequest;
 use tauri::WebviewWindowBuilder;
 
@@ -91,7 +91,15 @@ fn active_ports_come_back_in_the_documented_shape() {
         .unwrap_or_else(|| panic!("port {port} missing from get_active_ports"));
 
     // FR-001 — every field the table binds to must be present and camelCased.
-    for field in ["id", "port", "pid", "processName", "protocol", "address", "state"] {
+    for field in [
+        "id",
+        "port",
+        "pid",
+        "processName",
+        "protocol",
+        "address",
+        "state",
+    ] {
         assert!(!entry[field].is_null(), "{field} should be populated");
     }
     assert_eq!(entry["protocol"], "TCP");
@@ -186,7 +194,9 @@ fn process_details_describe_this_test_binary() {
     let info = app.ok("get_process_details", json!({ "pid": me }));
     assert_eq!(info["pid"], me);
     assert!(info["name"].as_str().is_some_and(|n| !n.is_empty()));
-    assert!(info["executable"].as_str().is_some_and(|e| e.contains("commands")));
+    assert!(info["executable"]
+        .as_str()
+        .is_some_and(|e| e.contains("commands")));
     assert!(info["command"].as_str().is_some_and(|c| !c.is_empty()));
 
     // §51 — a PID that is not running is a clean error, not a panic.
@@ -257,7 +267,11 @@ fn favorites_are_seeded_editable_and_persisted() {
 
     let id = angular["id"].as_str().unwrap().to_string();
     let removed = app.ok("remove_favorite", json!({ "id": id }));
-    assert!(removed.as_array().unwrap().iter().all(|f| f["port"] != 4200));
+    assert!(removed
+        .as_array()
+        .unwrap()
+        .iter()
+        .all(|f| f["port"] != 4200));
 
     // SR-002 applies here too.
     let message = app.err("add_favorite", json!({ "port": 70000, "label": "nope" }));
@@ -293,7 +307,10 @@ fn presets_ship_with_the_catalogue_and_can_be_reset() {
 #[test]
 fn history_records_every_attempt() {
     let app = harness();
-    assert_eq!(app.ok("get_history", json!({})).as_array().unwrap().len(), 0);
+    assert_eq!(
+        app.ok("get_history", json!({})).as_array().unwrap().len(),
+        0
+    );
 
     let listener = TcpListener::bind("127.0.0.1:0").expect("bind");
     let port = listener.local_addr().unwrap().port();
@@ -308,7 +325,10 @@ fn history_records_every_attempt() {
     assert_eq!(entry["action"], "Kill");
 
     app.ok("clear_history", json!({}));
-    assert_eq!(app.ok("get_history", json!({})).as_array().unwrap().len(), 0);
+    assert_eq!(
+        app.ok("get_history", json!({})).as_array().unwrap().len(),
+        0
+    );
 }
 
 #[test]
@@ -320,7 +340,10 @@ fn force_kill_respects_the_safety_switch() {
 
     // §38 Safety — the backend enforces the switch, not just the UI.
     let message = app.err("force_kill_process", json!({ "pid": std::process::id() }));
-    assert!(message.contains("Force kill is turned off"), "got: {message}");
+    assert!(
+        message.contains("Force kill is turned off"),
+        "got: {message}"
+    );
 }
 
 #[test]
@@ -384,13 +407,11 @@ fn grouped_processes_reuse_the_port_records() {
         .iter()
         .find(|g| g["pid"] == me)
         .expect("this test process should own a port");
-    assert!(
-        mine["ports"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .any(|p| p["port"] == port)
-    );
+    assert!(mine["ports"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|p| p["port"] == port));
 }
 
 #[test]
@@ -400,13 +421,11 @@ fn searching_by_name_finds_only_processes_holding_a_port() {
 
     // FR-003 / FR-020 — the preview behind "kill every X process".
     let found = app.ok("find_processes_by_name", json!({ "name": "commands" }));
-    assert!(
-        found
-            .as_array()
-            .unwrap()
-            .iter()
-            .any(|g| g["pid"] == std::process::id())
-    );
+    assert!(found
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|g| g["pid"] == std::process::id()));
 
     let none = app.ok("find_processes_by_name", json!({ "name": "" }));
     assert_eq!(none.as_array().unwrap().len(), 0);

@@ -2,8 +2,8 @@ import { useState } from "react";
 
 import { Empty, PageHeader, Panel } from "@/components/AppShell";
 import { SearchBar } from "@/components/SearchBar";
-import { Button } from "@/components/ui/Button";
-import { ProtectedTag } from "@/components/ui/StateTag";
+import { Button } from "@/components/ui/button";
+import { ProtectedTag } from "@/components/app/StateTag";
 import { useKill } from "@/hooks/useKill";
 import { pluralise, truncateStart } from "@/lib/utils";
 import { useData } from "@/stores/dataStore";
@@ -62,7 +62,7 @@ export function Processes() {
           </p>
           <Button
             size="sm"
-            variant="danger"
+            variant="destructive"
             onClick={() =>
               killByName(
                 bulkName,
@@ -138,7 +138,7 @@ export function Processes() {
                   )}
                   <Button
                     size="sm"
-                    variant="quiet"
+                    variant="outline"
                     onClick={() => killSelection(group.ports, false)}
                   >
                     Terminate

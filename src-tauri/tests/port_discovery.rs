@@ -7,7 +7,7 @@
 use std::net::{TcpListener, UdpSocket};
 use std::time::Instant;
 
-use portbaba_lib::testing::{ScanOptions, check_port, check_range, detect_project, scan};
+use portbaba_lib::testing::{check_port, check_range, detect_project, scan, ScanOptions};
 
 #[test]
 fn finds_a_socket_we_just_opened() {
@@ -36,7 +36,10 @@ fn check_port_reports_occupied_then_available() {
     let port = listener.local_addr().unwrap().port();
 
     let occupied = check_port(port).expect("check");
-    assert!(!occupied.available, "port {port} is bound, so not available");
+    assert!(
+        !occupied.available,
+        "port {port} is bound, so not available"
+    );
     assert!(!occupied.entries.is_empty());
 
     drop(listener);

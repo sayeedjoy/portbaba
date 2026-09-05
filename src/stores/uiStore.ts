@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { toast as sonner } from "sonner";
 
 import type { KillResult, PortInfo } from "@/types/system";
 
@@ -25,11 +26,7 @@ export interface KillRequest {
   force: boolean;
 }
 
-export interface Toast {
-  id: number;
-  tone: "success" | "danger" | "info";
-  message: string;
-}
+export type ToastTone = "success" | "danger" | "info";
 
 interface UiState {
   route: Route;
@@ -51,14 +48,12 @@ interface UiState {
   recentlyFreed: number[];
   markFreed: (ports: number[]) => void;
 
-  toasts: Toast[];
-  toast: (tone: Toast["tone"], message: string) => void;
-  dismissToast: (id: number) => void;
+  /** Reports an outcome to the user. Rendered by sonner. */
+  toast: (tone: ToastTone, message: string) => void;
   /** Turns kill results into the right number of toasts. */
   reportResults: (results: KillResult[]) => void;
 }
 
-let toastId = 0;
 let freedGeneration = 0;
 
 export const useUi = create<UiState>((set, get) => ({
@@ -87,14 +82,14 @@ export const useUi = create<UiState>((set, get) => ({
     }, 1600);
   },
 
-  toasts: [],
   toast: (tone, message) => {
-    const id = ++toastId;
-    set((state) => ({ toasts: [...state.toasts, { id, tone, message }] }));
-    window.setTimeout(() => get().dismissToast(id), tone === "danger" ? 7000 : 4500);
+    // Failures stay up longer: they usually name a next step, such as needing
+    // elevation or switching to Force Kill.
+    const options = { duration: tone === "danger" ? 7000 : 4500 };
+    if (tone === "success") sonner.success(message, options);
+    else if (tone === "danger") sonner.error(message, options);
+    else sonner(message, options);
   },
-  dismissToast: (id) =>
-    set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) })),
 
   reportResults: (results) => {
     if (!results.length) return;
