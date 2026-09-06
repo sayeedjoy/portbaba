@@ -49,7 +49,17 @@ impl Harness {
                 cmd: cmd.into(),
                 callback: CallbackFn(0),
                 error: CallbackFn(1),
-                url: "tauri://localhost".parse().unwrap(),
+                // The app protocol is served over `http://tauri.localhost` on
+                // Windows and `tauri://localhost` everywhere else. Get it wrong
+                // and the request reads as remote, so the ACL refuses every
+                // command with "not allowed. Plugin not found".
+                url: if cfg!(windows) {
+                    "http://tauri.localhost"
+                } else {
+                    "tauri://localhost"
+                }
+                .parse()
+                .unwrap(),
                 body: InvokeBody::Json(args),
                 headers: Default::default(),
                 invoke_key: INVOKE_KEY.to_string(),
@@ -350,8 +360,10 @@ fn force_kill_respects_the_safety_switch() {
 fn a_protected_process_is_refused_rather_than_signalled() {
     let app = harness();
 
-    // FR-008 — PID 1 is launchd/systemd/System on every supported platform.
-    let result = app.ok("kill_process", json!({ "pid": 1 }));
+    // FR-008 — PID 1 is launchd/systemd on Unix. Windows has no PID 1 at all;
+    // its equivalent is PID 4, "System".
+    let protected_pid = if cfg!(windows) { 4 } else { 1 };
+    let result = app.ok("kill_process", json!({ "pid": protected_pid }));
     assert_eq!(result["outcome"], "blocked");
     assert_eq!(result["success"], false);
     assert!(
