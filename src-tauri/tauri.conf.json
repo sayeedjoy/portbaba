@@ -39,6 +39,15 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "createUpdaterArtifacts": true
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://github.com/sayeedjoy/portbaba/releases/latest/download/latest.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IERFNkIyM0JCRjE1OEIzOTAKUldTUXMxanh1eU5yM3FFa3J2T3FEc1VrOEp0cHMvWWJYYXg4Y0VWekt1MXJIUngxelMwc0NmTXQK"
+    }
   }
 }
