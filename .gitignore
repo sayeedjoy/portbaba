@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Updater signing keys — never commit these
+*.key
+*.key.pub

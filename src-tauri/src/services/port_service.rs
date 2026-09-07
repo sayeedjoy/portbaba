@@ -3,7 +3,7 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::error::Result;
-use crate::models::{PortInfo, PortStatus, ProcessGroup, Protocol};
+use crate::models::{PortInfo, PortStatus, ProcessGroup, ProjectInfo, Protocol};
 use crate::platform::{provider, PortProvider};
 use crate::services::process_service::{self, ProcessSnapshot};
 
@@ -215,4 +215,55 @@ pub fn owners_of(port: u16) -> Result<Vec<(u32, Protocol)>> {
         .filter(|e| e.pid != 0)
         .map(|e| (e.pid, e.protocol))
         .collect())
+}
+
+/// One line in the tray's live list: a port the user could plausibly want back,
+/// with enough about the holder to tell two dev servers apart (FR-024).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LivePort {
+    pub port: u16,
+    pub process_name: String,
+    /// "Vite in my-dashboard" when we could work it out (§59).
+    pub description: Option<String>,
+}
+
+/// The tray's live list — TCP ports currently *listening* that portbaba could
+/// actually free.
+///
+/// Protected processes and sockets whose owner we cannot see are left out
+/// rather than shown and refused: a menu entry that always fails is worse than
+/// no entry at all (FR-008, §51). One line per port, so a dev server bound on
+/// both IPv4 and IPv6, or pre-forked across several PIDs, does not fill the
+/// menu with duplicates.
+pub fn live_ports(limit: usize) -> Result<Vec<LivePort>> {
+    let mut seen: HashSet<u16> = HashSet::new();
+    let mut live: Vec<LivePort> = Vec::new();
+
+    // `scan` returns ports in ascending order, so truncating at the limit keeps
+    // the low-numbered dev ports a developer is most likely to be after.
+    for entry in scan(ScanOptions::default())? {
+        if entry.protected || entry.owner_unknown || entry.pid == 0 {
+            continue;
+        }
+        if !seen.insert(entry.port) {
+            continue;
+        }
+        live.push(LivePort {
+            port: entry.port,
+            process_name: entry.process_name,
+            description: entry.project.map(describe),
+        });
+        if live.len() >= limit {
+            break;
+        }
+    }
+
+    Ok(live)
+}
+
+fn describe(project: ProjectInfo) -> String {
+    match project.framework {
+        Some(framework) => format!("{framework} in {}", project.name),
+        None => project.name,
+    }
 }

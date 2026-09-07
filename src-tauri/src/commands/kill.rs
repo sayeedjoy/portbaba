@@ -112,6 +112,48 @@ pub fn free_port<R: Runtime>(
     Ok(results)
 }
 
+/// Free several ports in one pass — the tray's "Kill All Processes" (FR-024).
+///
+/// Deliberately not a loop over [`free_port`]: that reports each port on its
+/// own, so freeing six ports would raise six notifications. Here the work is
+/// batched and the user gets a single summary at the end.
+///
+/// Ports that turn out to be free by the time we reach them contribute nothing
+/// — the list came from a scan moments earlier, and "port 5173 was already
+/// available" is not news the user asked for.
+pub fn free_ports<R: Runtime>(
+    app: &AppHandle<R>,
+    store: &Store,
+    ports: &[u16],
+    force: bool,
+) -> Vec<KillResult> {
+    let mut results: Vec<KillResult> = Vec::new();
+
+    for &port in ports {
+        let owners = match port_service::owners_of(port) {
+            Ok(owners) => owners,
+            Err(e) => {
+                results.push(failure(0, Some(port), force, e));
+                continue;
+            }
+        };
+
+        let mut pids: Vec<u32> = owners.into_iter().map(|(pid, _)| pid).collect();
+        pids.sort_unstable();
+        pids.dedup();
+
+        for pid in pids {
+            results.push(
+                terminate(store, pid, Some(port), force)
+                    .unwrap_or_else(|e| failure(pid, Some(port), force, e)),
+            );
+        }
+    }
+
+    finish(app, &results);
+    results
+}
+
 /// FR-019 — bulk termination of an explicit selection.
 #[tauri::command(async)]
 pub fn kill_processes<R: Runtime>(
@@ -405,6 +447,9 @@ fn record(store: &Store, result: &KillResult) {
 /// Tell the rest of the app something changed, and raise a notification (§54).
 fn finish<R: Runtime>(app: &AppHandle<R>, results: &[KillResult]) {
     let _ = app.emit("ports:changed", ());
+    // The tray lists live ports, so a kill anywhere in the app makes its menu
+    // stale. This is cheap — the rebuild happens on its own thread.
+    crate::rebuild_tray_menu(app);
 
     let store = app.try_state::<Store>();
     let notify = store.map(|s| s.settings().notifications).unwrap_or(false);

@@ -764,16 +764,38 @@ History should be stored locally.
 
 Port Killer should optionally minimize to the system tray.
 
-Tray menu:
+The tray menu leads with the ports that are in use right now, so the common
+case — "something is on 3000 and I want it gone" — is one click from the menu
+bar, without opening the window at all:
 
 ```text
-Port Killer
-
-Quick Kill Port
+Kill All Processes
+─────────────────────────────────
+Kill: Port 3722: node — Vite in my-dashboard
+Kill: Port 5000: python3 — Flask in api
+─────────────────────────────────
 Open Dashboard
+Quick Kill Port…
+Kill Favourite Port      ▸
 Refresh Ports
-Quit
+─────────────────────────────────
+Quit portbaba
 ```
+
+The list holds at most 12 ports, lowest first. Protected system processes and
+sockets whose owner cannot be resolved are left out rather than listed and
+refused. When nothing is listening the list is replaced by a disabled "No ports
+in use", and "Kill All Processes" is disabled.
+
+Because there is no "menu is about to open" hook to build the list on demand, it
+is refreshed in the background and after every termination. The background
+cadence follows the Port Scanner refresh interval but never runs faster than
+every 15 seconds — this loop runs for as long as the app does, so it is paid for
+in battery.
+
+On macOS the icon shows this menu on a plain left click, as a menu-bar item is
+expected to. On Windows and Linux a left click opens the dashboard, which is
+what a tray icon is expected to do there, and the menu is on the right button.
 
 ---
 
@@ -783,16 +805,19 @@ Quit
 
 Frequently used ports may appear directly inside the tray menu.
 
-Example:
+A favourite is a port the user cares about whether or not anything is bound to
+it, so favourites keep a submenu of their own rather than sharing the live list
+above — they need somewhere to live on the days they are not in use.
 
 ```text
-Kill Port
-
-3000
-5173
-5000
-8080
+Kill Favourite Port      ▸   3000 — Next.js
+                             5173 — Vite
+                             5000 — API
+                             8080 — Tomcat
 ```
+
+"Kill All Processes" acts on the live list, not on favourites: it frees exactly
+what the menu was showing when the user opened it.
 
 ---
 

@@ -32,7 +32,8 @@ Then one click frees it.
 
 - **Live port check** — the dashboard checks the port as you type, before you commit to anything.
 - **Project detection** — a `node` process becomes "Vite in my-dashboard", so you can tell two dev servers apart.
-- **Favourites** — ports you use often, shown as occupancy tiles here and in the tray menu.
+- **Menu bar / tray menu** — every port in use right now, with the process holding it, without opening the window. Click one to free it, or "Kill All Processes" to free the lot.
+- **Favourites** — ports you use often, shown as occupancy tiles here and under "Kill Favourite Port" in the tray menu.
 - **System-process protection** — `launchd`, `systemd`, `svchost.exe` and friends are refused, not silently killed.
 - **Graceful and forced termination** — SIGTERM/`taskkill` first, SIGKILL/`TerminateProcess` when you ask for it.
 - **Command palette** — `Ctrl/Cmd+K`; type a bare port number and it becomes "Kill port 3000".

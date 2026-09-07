@@ -10,6 +10,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useHotkeys } from "@/hooks/useHotkeys";
 import { usePortSync } from "@/hooks/usePorts";
+import { useUpdater } from "@/hooks/useUpdater";
 import { Dashboard } from "@/pages/Dashboard";
 import { Favorites } from "@/pages/Favorites";
 import { History } from "@/pages/History";
@@ -33,6 +34,7 @@ export default function App() {
   }, [loadSettings]);
 
   usePortSync();
+  useUpdater();
 
   // The shortcut may fire while another page is showing, so navigate first and
   // focus once the target has actually mounted.
