@@ -1,6 +1,6 @@
 [package]
 name = "portbaba"
-version = "0.1.0"
+version = "0.1.1"
 description = "portbaba — find it, kill it, free the port."
 authors = ["Sayeed Joy"]
 edition = "2021"
