@@ -1,6 +1,15 @@
-# portbaba
+<p align="center">
+  <img src="src-tauri/icons/icon.png" width="96" alt="portbaba icon" />
+</p>
 
-> Find it. Kill it. Free the port.
+<h1 align="center">portbaba</h1>
+<p align="center"><strong>Find it. Kill it. Free the port.</strong></p>
+
+<p align="center">
+  <img alt="platforms" src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-informational" />
+  <img alt="built with Tauri 2" src="https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white" />
+  <a href="https://github.com/sayeedjoy/portbaba/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/sayeedjoy/portbaba/actions/workflows/ci.yml/badge.svg" /></a>
+</p>
 
 A cross-platform desktop app that shows which process is holding a local
 development port and frees it in one click — no `lsof`, no `netstat`, no PIDs to
