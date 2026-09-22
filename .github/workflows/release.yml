@@ -2,16 +2,15 @@ name: Release
 
 on:
   push:
-    branches: [main]
-    # A README tweak should not mint a new version.
+    branches:
+      - main
     paths-ignore:
       - "**.md"
       - "docs/**"
       - ".github/ISSUE_TEMPLATE/**"
+
   workflow_dispatch:
 
-# One release at a time. Deliberately not cancel-in-progress: killing a run
-# midway leaves a draft holding only some platforms' installers.
 concurrency:
   group: release
   cancel-in-progress: false
@@ -23,94 +22,101 @@ jobs:
   version:
     name: Bump, tag, draft
     runs-on: ubuntu-latest
+
     permissions:
       contents: write
+
     outputs:
       version: ${{ steps.bump.outputs.version }}
       tag: ${{ steps.bump.outputs.tag }}
       release_id: ${{ steps.draft.outputs.release_id }}
+
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
-      - name: Work out the next version
+      - name: Work out next version
         id: bump
+        shell: bash
         run: |
-          NEXT=$(node -p "const [major, minor, patch] = require('./package.json').version.split('.'); [major, minor, Number(patch) + 1].join('.')")
+          NEXT=$(node -p "
+            const [major, minor, patch] =
+              require('./package.json').version.split('.');
+
+            [major, minor, Number(patch) + 1].join('.')
+          ")
+
           echo "version=$NEXT" >> "$GITHUB_OUTPUT"
           echo "tag=v$NEXT" >> "$GITHUB_OUTPUT"
+
           bash .github/scripts/bump-version.sh "$NEXT"
 
       - name: Commit and tag
+        shell: bash
         run: |
           git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -am "chore(release): ${{ steps.bump.outputs.tag }} [skip ci]"
-          git tag -a "${{ steps.bump.outputs.tag }}" -m "${{ steps.bump.outputs.tag }}"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git commit -am \
+            "chore(release): ${{ steps.bump.outputs.tag }} [skip ci]"
+
+          git tag -a \
+            "${{ steps.bump.outputs.tag }}" \
+            -m "${{ steps.bump.outputs.tag }}"
+
           git push origin HEAD:main
           git push origin "${{ steps.bump.outputs.tag }}"
 
-      - name: Open the draft release
+      - name: Create draft release
         id: draft
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ steps.bump.outputs.tag }}
+
+        shell: bash
         run: |
-          gh release create "$TAG" --draft --generate-notes --title "portbaba $TAG"
-          # Footer goes under GitHub's generated notes, not over them.
-          gh release view "$TAG" --json body -q .body > notes.md
-          printf '\n---\n\nDownload the installer for your OS below. The app also self-updates from this release.\n' >> notes.md
-          gh release edit "$TAG" --notes-file notes.md
-          echo "release_id=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq .id)" >> "$GITHUB_OUTPUT"
+          gh release create "$TAG" \
+            --draft \
+            --generate-notes \
+            --title "PortBaba $TAG"
+
+          echo "release_id=$(
+            gh api \
+              "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" \
+              --jq .id
+          )" >> "$GITHUB_OUTPUT"
+
 
   build:
     name: ${{ matrix.name }}
-    needs: version
-    # Installers cannot be cross-compiled: each one needs its own platform's
-    # toolchain (WiX and the MSVC linker, hdiutil and codesign, dpkg). So build
-    # each on its own runner and collect them into the one draft release.
+
+    needs:
+      - version
+
     strategy:
       fail-fast: false
+
       matrix:
         include:
-          - name: macOS (universal)
-            platform: macos-latest
-            args: --target universal-apple-darwin
-          - name: Windows (x64)
+          - name: Windows x64
             platform: windows-latest
-            args: ""
-          # Pinned rather than ubuntu-latest on purpose: the AppImage and .deb
-          # link against the build machine's glibc, so building on the oldest
-          # supported image is what makes them run on older distributions.
-          - name: Linux (x64)
-            platform: ubuntu-22.04
-            args: ""
+            args: --bundles nsis
+
+          - name: macOS Universal
+            platform: macos-latest
+            args: --target universal-apple-darwin --bundles dmg
 
     runs-on: ${{ matrix.platform }}
+
     permissions:
       contents: write
 
     steps:
       - uses: actions/checkout@v7
         with:
-          # The tag, not the branch head — this is the commit carrying the
-          # version the release is named after.
           ref: ${{ needs.version.outputs.tag }}
-
-      - name: Install Linux dependencies
-        if: matrix.platform == 'ubuntu-22.04'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libwebkit2gtk-4.1-dev \
-            librsvg2-dev \
-            libayatana-appindicator3-dev \
-            libxdo-dev \
-            libssl-dev \
-            build-essential \
-            patchelf \
-            file
 
       - uses: pnpm/action-setup@v6
         with:
@@ -121,62 +127,55 @@ jobs:
           node-version: 20
           cache: pnpm
 
-      - uses: dtolnay/rust-toolchain@stable
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+          targets: >-
+            ${{ matrix.platform == 'macos-latest'
+              && 'aarch64-apple-darwin,x86_64-apple-darwin'
+              || '' }}
 
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: ./src-tauri -> target
 
-      - run: pnpm install --frozen-lockfile
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
 
-      - uses: tauri-apps/tauri-action@v1
+      - name: Build Tauri app
+        uses: tauri-apps/tauri-action@v1
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Updater signing. Without these the build still succeeds, but it
-          # produces no .sig files, so latest.json is useless and nothing can
-          # self-update. Empty password is correct for a key generated with -p "".
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-          # Code signing. Every one of these is optional: without them the build
-          # still succeeds, it just produces unsigned installers that warn on
-          # first launch. Add them as repository secrets to sign for real.
-          #
-          # macOS — Developer ID certificate and notarization:
-          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+
         with:
           releaseId: ${{ needs.version.outputs.release_id }}
-          # Both are set on purpose: with releaseId alone the updater URLs in
-          # latest.json point at `releases/latest/download/...`, which breaks the
-          # moment a release without updater bundles becomes the latest one.
           tagName: ${{ needs.version.outputs.tag }}
-          # Must match the state of the release we are uploading into.
           releaseDraft: true
-          # The per-user setup.exe, not the MSI, which needs elevation to update.
-          updaterJsonPreferNsis: true
           retryAttempts: 3
           args: ${{ matrix.args }}
 
+
   publish:
     name: Publish
-    # Only after every platform is in. A draft that never flips is the intended
-    # failure mode: better a missing release than one the updater half-sees.
-    needs: [version, build]
+
+    needs:
+      - version
+      - build
+
     runs-on: ubuntu-latest
+
     permissions:
       contents: write
+
     steps:
-      - name: Flip the draft to published
+      - name: Publish release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
         run: |
-          gh release edit "${{ needs.version.outputs.tag }}" \
+          gh release edit \
+            "${{ needs.version.outputs.tag }}" \
             --repo "$GITHUB_REPOSITORY" \
             --draft=false \
             --latest
