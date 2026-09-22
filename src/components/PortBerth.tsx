@@ -1,5 +1,6 @@
 import { Star } from "lucide-react";
 
+import { ProcessIcon } from "@/components/app/ProcessIcon";
 import { cn } from "@/lib/utils";
 import type { FavoritePort, PortInfo } from "@/types/system";
 
@@ -65,6 +66,7 @@ export function PortBerth({
       <div className="mt-3 min-h-[28px]">
         {holder ? (
           <div className="flex items-center gap-1.5">
+            <ProcessIcon entry={holder} className="ml-1" />
             <button
               type="button"
               onClick={() => onInspect(holder.pid)}

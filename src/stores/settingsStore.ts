@@ -11,6 +11,7 @@ const FALLBACK: Settings = {
   refreshInterval: 5,
   showUdp: false,
   showEstablished: false,
+  devOnly: true,
   confirmBeforeKill: true,
   allowForceKill: true,
   protectSystemProcesses: true,

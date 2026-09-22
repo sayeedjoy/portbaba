@@ -1,6 +1,6 @@
 import { useMemo, type ReactNode } from "react";
 
-import { PortRow } from "@/components/PortRow";
+import { PortRow, type PortGroup } from "@/components/PortRow";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
@@ -16,18 +16,36 @@ import type { PortInfo } from "@/types/system";
 
 interface PortTableProps {
   ports: PortInfo[];
+  /** Socket ids, so selection survives regrouping between refreshes. */
   selection?: Set<string>;
   onSelectionChange?: (next: Set<string>) => void;
   empty: ReactNode;
 }
 
+/**
+ * One server usually binds the same port twice, once for IPv4 and once for
+ * IPv6. To a person that is one thing listening, so it gets one row.
+ */
+function groupSockets(ports: PortInfo[]): PortGroup[] {
+  const groups = new Map<string, PortGroup>();
+  for (const socket of ports) {
+    const key = `${socket.protocol}:${socket.port}:${socket.pid}:${socket.state}`;
+    const group = groups.get(key);
+    if (group) group.sockets.push(socket);
+    else groups.set(key, { key, primary: socket, sockets: [socket] });
+  }
+  return [...groups.values()];
+}
+
 /** §34 — the ports table. Selection is optional so the dashboard can reuse it. */
 export function PortTable({ ports, selection, onSelectionChange, empty }: PortTableProps) {
   const allowForceKill = useSettings((s) => s.settings.allowForceKill);
+  const showUdp = useSettings((s) => s.settings.showUdp);
   const openDetails = useUi((s) => s.openDetails);
   const recentlyFreed = useUi((s) => s.recentlyFreed);
   const { killProcess } = useKill();
 
+  const groups = useMemo(() => groupSockets(ports), [ports]);
   const selectable = Boolean(selection && onSelectionChange);
   const allSelected = useMemo(
     () => ports.length > 0 && ports.every((p) => selection?.has(p.id)),
@@ -39,11 +57,13 @@ export function PortTable({ ports, selection, onSelectionChange, empty }: PortTa
     onSelectionChange(allSelected ? new Set() : new Set(ports.map((p) => p.id)));
   }
 
-  function toggleOne(id: string) {
+  function toggleGroup(ids: string[], select: boolean) {
     if (!selection || !onSelectionChange) return;
     const next = new Set(selection);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
+    for (const id of ids) {
+      if (select) next.add(id);
+      else next.delete(id);
+    }
     onSelectionChange(next);
   }
 
@@ -69,24 +89,26 @@ export function PortTable({ ports, selection, onSelectionChange, empty }: PortTa
           <TableHead className="w-[76px] pl-4">Port</TableHead>
           <TableHead>Process</TableHead>
           <TableHead className="w-[76px]">PID</TableHead>
-          <TableHead className="w-[68px]">Protocol</TableHead>
-          <TableHead className="w-[116px]">Address</TableHead>
+          {/* Without UDP every row is TCP, and a column that never changes is noise. */}
+          {showUdp && <TableHead className="w-[68px]">Protocol</TableHead>}
+          <TableHead className="w-[132px]">Reachable from</TableHead>
           <TableHead className="w-[112px]">Status</TableHead>
           <TableHead className="w-[152px] pr-3 text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {ports.map((port) => (
+        {groups.map((group) => (
           <PortRow
-            key={port.id}
-            port={port}
+            key={group.key}
+            group={group}
+            showProtocol={showUdp}
             selectable={selectable}
-            selected={selection?.has(port.id) ?? false}
-            onToggleSelect={toggleOne}
+            selected={group.sockets.every((s) => selection?.has(s.id))}
+            onToggleSelect={toggleGroup}
             onDetails={openDetails}
             onKill={killProcess}
             allowForceKill={allowForceKill}
-            justFreed={recentlyFreed.includes(port.port)}
+            justFreed={recentlyFreed.includes(group.primary.port)}
           />
         ))}
       </TableBody>

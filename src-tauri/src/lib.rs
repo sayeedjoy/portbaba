@@ -251,7 +251,7 @@ fn apply_autostart<R: Runtime>(app: &AppHandle<R>, settings: &Settings) {
     if result.is_err() {
         let _ = app.emit(
             "settings:error",
-            "portbaba could not change the launch-at-startup setting.",
+            "Port Baba could not change the launch-at-startup setting.",
         );
     }
 }
@@ -317,7 +317,7 @@ fn build_tray<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
     remember(app, signature, listed);
 
     let mut tray = TrayIconBuilder::with_id(TRAY_ID)
-        .tooltip("portbaba")
+        .tooltip("Port Baba")
         .menu(&menu)
         // A macOS menu-bar item is expected to drop its menu on a plain left
         // click. On Windows and Linux the same click is expected to open the
@@ -466,7 +466,7 @@ fn tray_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<(Menu<R>, String, 
     let open = MenuItem::with_id(app, "tray:open", "Open Dashboard", true, None::<&str>)?;
     let quick = MenuItem::with_id(app, "tray:quick", "Quick Kill Port…", true, None::<&str>)?;
     let refresh = MenuItem::with_id(app, "tray:refresh", "Refresh Ports", true, None::<&str>)?;
-    let quit = MenuItem::with_id(app, "tray:quit", "Quit portbaba", true, None::<&str>)?;
+    let quit = MenuItem::with_id(app, "tray:quit", "Quit Port Baba", true, None::<&str>)?;
 
     // FR-024 — favourites keep a submenu of their own. A favourite is a port the
     // user cares about whether or not anything is on it, so it needs somewhere
@@ -616,7 +616,7 @@ fn tray_kill<R: Runtime>(app: AppHandle<R>, port: u16) {
         let _ = app.emit("ports:changed", ());
         rebuild_tray_menu(&app);
         if store.settings().notifications {
-            notify(&app, "portbaba", &message);
+            notify(&app, "Port Baba", &message);
         }
     });
 }

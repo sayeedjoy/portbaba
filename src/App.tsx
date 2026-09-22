@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 
+import { AboutDialog } from "@/components/AboutDialog";
 import { AppShell } from "@/components/AppShell";
 import { CommandPalette } from "@/components/CommandPalette";
 import { KillDialog } from "@/components/KillDialog";
@@ -54,7 +55,7 @@ export default function App() {
     // A brief, honest placeholder rather than a skeleton that pretends to have data.
     return (
       <div className="flex h-full items-center justify-center text-ink-muted">
-        Starting portbaba…
+        Starting Port Baba…
       </div>
     );
   }
@@ -71,6 +72,7 @@ export default function App() {
       </AppShell>
 
       <CommandPalette />
+      <AboutDialog />
       <KillDialog />
       <ProcessDetails />
       <Toaster position="bottom-right" richColors closeButton />

@@ -2,6 +2,7 @@ import { useEffect, useMemo } from "react";
 
 import { useData } from "@/stores/dataStore";
 import { useSettings } from "@/stores/settingsStore";
+import { isDevPort } from "@/lib/utils";
 import * as api from "@/services/tauri";
 import type { PortInfo } from "@/types/system";
 
@@ -42,13 +43,25 @@ export function usePortSync() {
   }, [refresh, reloadHistory]);
 }
 
-/** FR-002 / FR-003 — one search box that understands ports and process names. */
+/** The socket table as the "Dev only" setting wants it shown. */
+export function useVisiblePorts(): PortInfo[] {
+  const ports = useData((s) => s.ports);
+  const devOnly = useSettings((s) => s.settings.devOnly);
+  return useMemo(() => (devOnly ? ports.filter(isDevPort) : ports), [ports, devOnly]);
+}
+
+/**
+ * FR-002 / FR-003 — one search box that understands ports and process names.
+ * A search always covers every socket: hiding the answer to "who holds 3000?"
+ * would make a busy port look free.
+ */
 export function useFilteredPorts(query: string): PortInfo[] {
   const ports = useData((s) => s.ports);
+  const visible = useVisiblePorts();
 
   return useMemo(() => {
     const needle = query.trim().toLowerCase();
-    if (!needle) return ports;
+    if (!needle) return visible;
 
     return ports.filter((port) => {
       if (String(port.port).startsWith(needle)) return true;
@@ -60,5 +73,5 @@ export function useFilteredPorts(query: string): PortInfo[] {
       if (port.command?.toLowerCase().includes(needle)) return true;
       return false;
     });
-  }, [ports, query]);
+  }, [ports, visible, query]);
 }

@@ -11,6 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { ProcessIcon } from "@/components/app/ProcessIcon";
 import { buttonVariants } from "@/components/ui/button";
 import { cn, pluralise } from "@/lib/utils";
 import { useKill } from "@/hooks/useKill";
@@ -72,13 +73,14 @@ export function KillDialog() {
                 <li
                   key={target.id}
                   className={cn(
-                    "flex items-baseline gap-3 px-4 py-2.5",
+                    "flex items-center gap-3 px-4 py-2.5",
                     target.protected && "bg-[var(--protected-wash)]",
                   )}
                 >
                   <span className="w-14 shrink-0 text-[15px] font-semibold">
                     {target.port}
                   </span>
+                  <ProcessIcon entry={target} />
                   <span className="min-w-0 flex-1 truncate">{target.processName}</span>
                   <span className="shrink-0 text-[13px] text-ink-muted">
                     PID {target.pid}
@@ -101,7 +103,7 @@ export function KillDialog() {
             title="This is a system process"
             body={`Terminating ${protectedTargets
               .map((t) => t.processName)
-              .join(", ")} may cause system instability, so portbaba will refuse. Turn off "Protect system processes" in Settings → Safety if you are certain.`}
+              .join(", ")} may cause system instability, so Port Baba will refuse. Turn off "Protect system processes" in Settings → Safety if you are certain.`}
           />
         ) : protectedTargets.length > 0 ? (
           <Warning

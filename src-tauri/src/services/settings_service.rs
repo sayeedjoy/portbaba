@@ -28,6 +28,10 @@ pub struct Settings {
     pub refresh_interval: u32,
     pub show_udp: bool,
     pub show_established: bool,
+    /// Hide sockets owned by the OS and by non-development apps. Defaulted so
+    /// state files written before this field existed still load.
+    #[serde(default = "default_true")]
+    pub dev_only: bool,
 
     // Safety
     pub confirm_before_kill: bool,
@@ -55,6 +59,7 @@ impl Default for Settings {
             refresh_interval: 5,
             show_udp: false,
             show_established: false,
+            dev_only: true,
 
             confirm_before_kill: true,
             allow_force_kill: true,
@@ -67,6 +72,10 @@ impl Default for Settings {
             global_shortcut: default_shortcut().to_string(),
         }
     }
+}
+
+fn default_true() -> bool {
+    true
 }
 
 pub fn default_shortcut() -> &'static str {

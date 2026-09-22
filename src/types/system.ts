@@ -106,6 +106,8 @@ export interface Settings {
   refreshInterval: number;
   showUdp: boolean;
   showEstablished: boolean;
+  /** Hide OS and non-development sockets from the default views. */
+  devOnly: boolean;
 
   confirmBeforeKill: boolean;
   allowForceKill: boolean;

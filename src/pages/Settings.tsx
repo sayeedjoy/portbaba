@@ -28,7 +28,7 @@ export function Settings() {
         <Row
           id="launch-at-startup"
           label="Launch at startup"
-          hint="Open portbaba when you log in."
+          hint="Open Port Baba when you log in."
         >
           <Switch
             id="launch-at-startup"
@@ -39,7 +39,7 @@ export function Settings() {
         <Row
           id="close-to-tray"
           label="Keep running in the tray"
-          hint="Closing the window leaves portbaba in the tray instead of quitting."
+          hint="Closing the window leaves Port Baba in the tray instead of quitting."
         >
           <Switch
             id="close-to-tray"
@@ -93,6 +93,17 @@ export function Settings() {
               <SelectItem value="30">30 seconds</SelectItem>
             </SelectContent>
           </Select>
+        </Row>
+        <Row
+          id="dev-only"
+          label="Dev only"
+          hint="Hide sockets held by the operating system and non-development apps. Searching still covers every socket."
+        >
+          <Switch
+            id="dev-only"
+            checked={settings.devOnly}
+            onCheckedChange={(devOnly) => void update({ devOnly })}
+          />
         </Row>
         <Row id="show-udp" label="Show UDP" hint="Include UDP sockets alongside TCP.">
           <Switch
@@ -199,7 +210,7 @@ export function Settings() {
 
       {system && (
         <p className="mt-8 text-[13px] text-ink-muted">
-          portbaba {system.appVersion} on {system.osVersion ?? system.os} (
+          Port Baba {system.appVersion} on {system.osVersion ?? system.os} (
           {system.arch}).{" "}
           {system.elevated
             ? "Running with elevated privileges."

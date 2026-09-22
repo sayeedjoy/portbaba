@@ -40,6 +40,73 @@ export function portState(entry: PortInfo): PortState {
   }
 }
 
+/**
+ * Runtimes, servers and databases a developer starts on purpose, keyed by
+ * executable name without its extension, with the name people know them by.
+ * Matched in full, so "node" does not catch "nodejs-updater".
+ */
+const DEV_PROCESSES = new Map<string, string>([
+  // Language runtimes and toolchains
+  ["node", "Node.js"], ["bun", "Bun"], ["deno", "Deno"], ["python", "Python"],
+  ["python3", "Python"], ["pythonw", "Python"], ["py", "Python"],
+  ["java", "Java"], ["javaw", "Java"], ["go", "Go"], ["dotnet", ".NET"],
+  ["ruby", "Ruby"], ["php", "PHP"], ["php-cgi", "PHP"], ["perl", "Perl"],
+  ["elixir", "Elixir"], ["beam.smp", "Erlang VM"], ["erl", "Erlang VM"],
+  ["cargo", "Rust"], ["rustc", "Rust"], ["esbuild", "esbuild"], ["hugo", "Hugo"],
+  // Containers and WSL port forwarding
+  ["docker", "Docker"], ["dockerd", "Docker"], ["com.docker.backend", "Docker"],
+  ["com.docker.proxy", "Docker"], ["vpnkit", "Docker"], ["containerd", "Docker"],
+  ["wslrelay", "WSL"], ["podman", "Podman"],
+  // Databases and local infrastructure
+  ["postgres", "PostgreSQL"], ["mysqld", "MySQL"], ["mariadbd", "MariaDB"],
+  ["sqlservr", "SQL Server"], ["redis-server", "Redis"], ["mongod", "MongoDB"],
+  ["memurai", "Redis (Memurai)"], ["memcached", "Memcached"],
+  ["elasticsearch", "Elasticsearch"], ["rabbitmq-server", "RabbitMQ"],
+  ["minio", "MinIO"], ["nginx", "nginx"], ["httpd", "Apache"], ["caddy", "Caddy"],
+  ["traefik", "Traefik"], ["grafana-server", "Grafana"], ["ngrok", "ngrok"],
+]);
+
+export function devRuntime(entry: PortInfo): string | undefined {
+  const name = entry.processName.toLowerCase().replace(/\.exe$/, "");
+  if (/^python\d+(\.\d+)?$/.test(name)) return "Python";
+  return DEV_PROCESSES.get(name);
+}
+
+/**
+ * Whether a socket belongs to development work, for the "Dev only" view.
+ * A detected framework wins; otherwise the owning executable decides. OS
+ * processes never count, even if they happen to match a name.
+ */
+export function isDevPort(entry: PortInfo): boolean {
+  if (entry.protected) return false;
+  return Boolean(entry.project?.framework || devRuntime(entry));
+}
+
+/**
+ * What the process is, in the words a developer would use: "Vite in portbaba",
+ * "PostgreSQL". The project wins because it identifies a forgotten dev server;
+ * the runtime name covers services started without a readable working folder.
+ */
+export function describeOwner(entry: PortInfo): string | null {
+  const project = entry.project;
+  if (project?.framework) return `${project.framework} in ${project.name}`;
+  if (project) return project.name;
+  return devRuntime(entry) ?? null;
+}
+
+export type Reach = "local" | "everywhere" | "specific";
+
+/**
+ * Who can connect, which is what the bind address actually means: loopback is
+ * this computer only, a wildcard is every network the machine is on.
+ */
+export function reachOf(address: string): Reach {
+  const bare = address.replace(/^\[|\]$/g, "");
+  if (bare === "0.0.0.0" || bare === "::" || bare === "*") return "everywhere";
+  if (bare === "::1" || bare.startsWith("127.") || bare === "localhost") return "local";
+  return "specific";
+}
+
 const RELATIVE = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
 
 /** "5 minutes ago" — the form FR-016 asks for. */

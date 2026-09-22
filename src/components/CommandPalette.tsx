@@ -9,7 +9,9 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
+import { ProcessIcon } from "@/components/app/ProcessIcon";
 import { useKill } from "@/hooks/useKill";
+import { useResolvedTheme } from "@/hooks/useResolvedTheme";
 import { parsePort, parseRange } from "@/lib/utils";
 import { useData } from "@/stores/dataStore";
 import { useSettings } from "@/stores/settingsStore";
@@ -31,7 +33,8 @@ export function CommandPalette() {
   const refresh = useData((s) => s.refresh);
   const ports = useData((s) => s.ports);
   const groups = useData((s) => s.groups);
-  const theme = useSettings((s) => s.settings.theme);
+  const setAboutOpen = useUi((s) => s.setAboutOpen);
+  const theme = useResolvedTheme();
   const updateSettings = useSettings((s) => s.update);
   const { killPort, killByName } = useKill();
 
@@ -150,6 +153,7 @@ export function CommandPalette() {
                 value={`${entry.processName} port ${entry.port} pid ${entry.pid}`}
                 onSelect={() => run(() => openDetails(entry.pid))}
               >
+                <ProcessIcon entry={entry} />
                 <span>
                   {entry.processName} on port {entry.port}
                 </span>
@@ -207,6 +211,9 @@ export function CommandPalette() {
             }
           >
             {theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+          </CommandItem>
+          <CommandItem value="about port baba portbaba" onSelect={() => run(() => setAboutOpen(true))}>
+            About Port Baba
           </CommandItem>
         </CommandGroup>
       </CommandList>

@@ -35,6 +35,9 @@ interface UiState {
   paletteOpen: boolean;
   setPaletteOpen: (open: boolean) => void;
 
+  aboutOpen: boolean;
+  setAboutOpen: (open: boolean) => void;
+
   /** PID whose detail panel is open (FR-016). */
   detailsPid: number | null;
   openDetails: (pid: number) => void;
@@ -62,6 +65,9 @@ export const useUi = create<UiState>((set, get) => ({
 
   paletteOpen: false,
   setPaletteOpen: (paletteOpen) => set({ paletteOpen }),
+
+  aboutOpen: false,
+  setAboutOpen: (aboutOpen) => set({ aboutOpen }),
 
   detailsPid: null,
   openDetails: (detailsPid) => set({ detailsPid }),

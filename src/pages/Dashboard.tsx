@@ -5,7 +5,9 @@ import { PortBerth } from "@/components/PortBerth";
 import { PortTable } from "@/components/PortTable";
 import { QuickKill, type QuickKillHandle } from "@/components/QuickKill";
 import { useKill } from "@/hooks/useKill";
+import { useVisiblePorts } from "@/hooks/usePorts";
 import { occupancyOf, useData } from "@/stores/dataStore";
+import { useSettings } from "@/stores/settingsStore";
 import { useUi } from "@/stores/uiStore";
 
 /** §33 — the screen you open when a port is busy. */
@@ -18,7 +20,11 @@ export const Dashboard = forwardRef<QuickKillHandle>(function Dashboard(_props, 
   const recentlyFreed = useUi((s) => s.recentlyFreed);
   const { killPort } = useKill();
 
-  const listening = ports.filter((p) => p.state === "LISTEN");
+  const visible = useVisiblePorts();
+  const devOnly = useSettings((s) => s.settings.devOnly);
+
+  // Favourites above check every socket; this list follows "Dev only".
+  const listening = visible.filter((p) => p.state === "LISTEN");
   const shown = listening.slice(0, 8);
 
   return (
@@ -79,7 +85,9 @@ export const Dashboard = forwardRef<QuickKillHandle>(function Dashboard(_props, 
                 title={
                   initialising
                     ? "Reading the socket table…"
-                    : "Nothing is listening on this machine right now."
+                    : devOnly
+                      ? "No dev servers are listening right now."
+                      : "Nothing is listening on this machine right now."
                 }
               />
             }

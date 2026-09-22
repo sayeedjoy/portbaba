@@ -15,7 +15,7 @@ export function useUpdater() {
         const update = await check();
         if (!update || cancelled) return;
 
-        toast(`portbaba ${update.version} is available`, {
+        toast(`Port Baba ${update.version} is available`, {
           description: "Downloads in the background, then restarts.",
           duration: Infinity,
           action: {

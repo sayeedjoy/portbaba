@@ -5,7 +5,7 @@ import { PortTable } from "@/components/PortTable";
 import { SearchBar, type SearchHandle } from "@/components/SearchBar";
 import { Button } from "@/components/ui/button";
 import { StateTag } from "@/components/app/StateTag";
-import { useFilteredPorts } from "@/hooks/usePorts";
+import { useFilteredPorts, useVisiblePorts } from "@/hooks/usePorts";
 import { useKill } from "@/hooks/useKill";
 import { parseRange, pluralise } from "@/lib/utils";
 import * as api from "@/services/tauri";
@@ -26,6 +26,10 @@ export const Ports = forwardRef<SearchHandle>(function Ports(_props, ref) {
   const { killSelection } = useKill();
 
   const filtered = useFilteredPorts(query);
+  const visible = useVisiblePorts();
+  const hidden = ports.length - visible.length;
+  // Count servers, not sockets: IPv4 and IPv6 halves of one server share a row.
+  const servers = new Set(visible.map((p) => `${p.protocol}:${p.port}:${p.pid}`)).size;
   const range = useMemo(() => parseRange(query), [query]);
 
   // Drop selections whose ports have gone away between refreshes.
@@ -44,12 +48,22 @@ export const Ports = forwardRef<SearchHandle>(function Ports(_props, ref) {
     <div className="mx-auto max-w-6xl px-6 py-6">
       <PageHeader
         title="Ports"
-        description={`${pluralise(ports.length, "socket")} in use on this machine`}
+        description={
+          settings.devOnly
+            ? `${pluralise(servers, "dev server")} using ports`
+            : `${pluralise(ports.length, "socket")} in use on this machine`
+        }
       >
         <SearchBar ref={ref} value={query} onChange={setQuery} className="w-[320px]" />
       </PageHeader>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
+        <FilterChip
+          active={settings.devOnly}
+          onClick={() => void updateSettings({ devOnly: !settings.devOnly })}
+        >
+          Dev only
+        </FilterChip>
         <FilterChip
           active={settings.showUdp}
           onClick={() => void updateSettings({ showUdp: !settings.showUdp })}
@@ -64,6 +78,20 @@ export const Ports = forwardRef<SearchHandle>(function Ports(_props, ref) {
         >
           Established connections
         </FilterChip>
+
+        {/* Say what the filter is hiding, so a short list never reads as "that's everything". */}
+        {selected.length === 0 && settings.devOnly && hidden > 0 && !query && (
+          <p className="ml-auto text-[13px] text-ink-muted">
+            {pluralise(hidden, "system or app socket")} hidden ·{" "}
+            <button
+              type="button"
+              onClick={() => void updateSettings({ devOnly: false })}
+              className="text-ink-soft underline-offset-2 hover:text-ink hover:underline"
+            >
+              Show all
+            </button>
+          </p>
+        )}
 
         {selected.length > 0 && (
           <div className="ml-auto flex items-center gap-2">
@@ -106,7 +134,9 @@ export const Ports = forwardRef<SearchHandle>(function Ports(_props, ref) {
                     ? "Reading the socket table…"
                     : query
                       ? `Nothing matches “${query}”.`
-                      : "No ports are in use. Turn on UDP or established connections to widen the scan."
+                      : settings.devOnly && ports.length > 0
+                        ? `No dev servers are running. ${pluralise(ports.length, "other socket")} hidden by Dev only.`
+                        : "No ports are in use. Turn on UDP or established connections to widen the scan."
                 }
               />
             }

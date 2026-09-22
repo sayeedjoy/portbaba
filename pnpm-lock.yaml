@@ -56,6 +56,9 @@ importers:
       tailwind-merge:
         specifier: ^3.6.0
         version: 3.6.0
+      thesvg:
+        specifier: ^3.3.8
+        version: 3.3.8
       zustand:
         specifier: ^5.0.15
         version: 5.0.15(@types/react@19.2.18)(react@19.2.8)
@@ -1101,6 +1104,10 @@ packages:
   '@tauri-apps/plugin-updater@2.11.0':
     resolution: {integrity: sha512-AE36XkOoSna24G40jZMY15nzAnkXEPL/73tGoseGrtGOHuI/cZwWzHpZFLjKXDPgzYZ435z1gHu28LgrsBwIxQ==}
 
+  '@thesvg/icons@3.3.8':
+    resolution: {integrity: sha512-3NbRF2NT7LMURWY8eVqQiVdsi5PVjV+9g8182IuNgMAvJcaDgB5pCjy+DhNyazwQrvFBpWB8vafNF7n3YSf6Fw==}
+    engines: {node: '>=18'}
+
   '@types/node@26.4.1':
     resolution: {integrity: sha512-k97ENvZWtvA6yqz5/FS6a7duDgOPEeOQOc2iKS/nY6mX6qJUKtLnWzQS+Xj6tXweyj6ZcTAK2Qecetnvi9nCLA==}
 
@@ -1444,6 +1451,10 @@ packages:
   tapable@2.3.3:
     resolution: {integrity: sha512-uxc/zpqFg6x7C8vOE7lh6Lbda8eEL9zmVm/PLeTPBRhh1xCgdWaQ+J1CUieGpIfm2HdtsUpRv+HshiasBMcc6A==}
     engines: {node: '>=6'}
+
+  thesvg@3.3.8:
+    resolution: {integrity: sha512-RVSaejBfwkEFI5iln4zecNdp978tgpNV1BxNKGr7IzTC9xmFhkqqznCeCHEcX2zqH4xSI2BKMjNyhSbVS/ceHg==}
+    engines: {node: '>=18'}
 
   tinyglobby@0.2.17:
     resolution: {integrity: sha512-wXR/dYpcqKmfWpEdZjiKJOwCNFndD0DMnrW/cYjVGttEkBfVgcLFHoNrlj47mjOVic9yyNu65alsgF4NQyTa2g==}
@@ -2512,6 +2523,8 @@ snapshots:
     dependencies:
       '@tauri-apps/api': 2.11.1
 
+  '@thesvg/icons@3.3.8': {}
+
   '@types/node@26.4.1':
     dependencies:
       undici-types: 8.3.0
@@ -2829,6 +2842,10 @@ snapshots:
   tailwindcss@4.3.3: {}
 
   tapable@2.3.3: {}
+
+  thesvg@3.3.8:
+    dependencies:
+      '@thesvg/icons': 3.3.8
 
   tinyglobby@0.2.17:
     dependencies:

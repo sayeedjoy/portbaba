@@ -1,16 +1,22 @@
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   Clock,
   Gauge,
+  Info,
+  Moon,
   Network,
   RefreshCw,
   Settings as SettingsIcon,
   Star,
+  Sun,
   Terminal,
 } from "lucide-react";
 
+import appIcon from "../../src-tauri/icons/128x128.png";
+import { useResolvedTheme } from "@/hooks/useResolvedTheme";
 import { cn, shortcutLabel } from "@/lib/utils";
 import { useData } from "@/stores/dataStore";
+import { useSettings } from "@/stores/settingsStore";
 import { useUi, type Route } from "@/stores/uiStore";
 
 const NAV: { route: Route; label: string; icon: typeof Gauge }[] = [
@@ -27,6 +33,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const route = useUi((s) => s.route);
   const navigate = useUi((s) => s.navigate);
   const setPaletteOpen = useUi((s) => s.setPaletteOpen);
+  const setAboutOpen = useUi((s) => s.setAboutOpen);
+  const updateSettings = useSettings((s) => s.update);
+  const resolvedTheme = useResolvedTheme();
   const refresh = useData((s) => s.refresh);
   const refreshing = useData((s) => s.refreshing);
   const lastScan = useData((s) => s.lastScan);
@@ -39,11 +48,14 @@ export function AppShell({ children }: { children: ReactNode }) {
         aria-label="Sections"
         className="flex w-[186px] shrink-0 flex-col border-r border-hairline bg-panel"
       >
-        <div className="px-4 pt-5 pb-4">
-          <p className="text-[15px] font-semibold tracking-[-0.01em]">portbaba</p>
-          <p className="mt-0.5 text-[12.5px] text-ink-muted">
-            {portCount} {portCount === 1 ? "port in use" : "ports in use"}
-          </p>
+        <div className="flex items-center gap-2.5 px-4 pt-5 pb-4">
+          <img src={appIcon} alt="" className="size-8 shrink-0" draggable={false} />
+          <div className="min-w-0">
+            <p className="text-[15px] font-semibold tracking-[-0.01em]">Port Baba</p>
+            <p className="mt-0.5 text-[12.5px] text-ink-muted">
+              {portCount} {portCount === 1 ? "port in use" : "ports in use"}
+            </p>
+          </div>
         </div>
 
         <ul className="flex-1 px-2">
@@ -68,6 +80,29 @@ export function AppShell({ children }: { children: ReactNode }) {
         </ul>
 
         <div className="border-t border-hairline p-2">
+          <button
+            type="button"
+            onClick={() => setAboutOpen(true)}
+            className="mb-0.5 flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-ink-soft hover:bg-raised hover:text-ink"
+          >
+            <Info aria-hidden className="h-4 w-4 shrink-0" />
+            About
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              void updateSettings({ theme: resolvedTheme === "dark" ? "light" : "dark" })
+            }
+            aria-label={`Switch to ${resolvedTheme === "dark" ? "light" : "dark"} theme`}
+            className="mb-0.5 flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-ink-soft hover:bg-raised hover:text-ink"
+          >
+            {resolvedTheme === "dark" ? (
+              <Sun aria-hidden className="h-4 w-4 shrink-0" />
+            ) : (
+              <Moon aria-hidden className="h-4 w-4 shrink-0" />
+            )}
+            {resolvedTheme === "dark" ? "Light mode" : "Dark mode"}
+          </button>
           <button
             type="button"
             onClick={() => setPaletteOpen(true)}
@@ -104,10 +139,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             onClick={() => void refresh()}
             className="flex h-8 shrink-0 items-center gap-2 rounded-lg border border-hairline bg-raised px-3 text-[13px] hover:border-hairline-strong"
           >
-            <RefreshCw
-              aria-hidden
-              className={cn("h-3.5 w-3.5", refreshing && "animate-spin")}
-            />
+            <RefreshSpinner refreshing={refreshing} />
             Refresh
             <kbd className="text-[11px] text-ink-muted">{shortcutLabel("Mod+R")}</kbd>
           </button>
@@ -116,6 +148,29 @@ export function AppShell({ children }: { children: ReactNode }) {
         <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
       </div>
     </div>
+  );
+}
+
+/**
+ * A scan usually finishes in milliseconds, far too fast for a spinner that
+ * stops the moment it ends. So every scan, manual or automatic, turns the
+ * icon at least once, and it only stops at the end of a full turn.
+ */
+function RefreshSpinner({ refreshing }: { refreshing: boolean }) {
+  const [spinning, setSpinning] = useState(false);
+
+  useEffect(() => {
+    if (refreshing) setSpinning(true);
+  }, [refreshing]);
+
+  return (
+    <RefreshCw
+      aria-hidden
+      className={cn("h-3.5 w-3.5", spinning && "animate-spin")}
+      onAnimationIteration={() => {
+        if (!useData.getState().refreshing) setSpinning(false);
+      }}
+    />
   );
 }
 
