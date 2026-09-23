@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-portbaba is a Tauri 2 desktop app (React 19 + TypeScript + Tailwind 4 + shadcn/ui frontend, Rust backend) that shows which process holds a local port and terminates it. Targets Windows, macOS and Linux. Requirements live in [docs/srs.md](docs/srs.md); code comments cite them by ID (`FR-012`, `SR-001`, `§38`), so grep the SRS for an ID to find the intent behind a piece of code.
+portbaba is a Tauri 2 desktop app (React 19 + TypeScript + Tailwind 4 + shadcn/ui frontend, Rust backend) that shows which process holds a local port and terminates it. Targets Windows, macOS and Linux. Existing code comments use requirement IDs such as `FR-012`, `SR-001`, and `§38` to identify related behaviour.
 
 ## Commands
 
@@ -60,7 +60,7 @@ Errors: every command returns `Result<T, error::Error>`. `Error` serialises to a
 ## Tests
 
 - [src-tauri/tests/commands.rs](src-tauri/tests/commands.rs) drives real command handlers over the real IPC path using `tauri::test::mock_builder`. Each test gets its own temp config dir, so real settings are never touched. Add command tests here with `harness().call("cmd", json!({...}))`.
-- [src-tauri/tests/port_discovery.rs](src-tauri/tests/port_discovery.rs) binds real sockets, checks they are discovered, and enforces the SRS's 500 ms discovery budget.
+- [src-tauri/tests/port_discovery.rs](src-tauri/tests/port_discovery.rs) binds real sockets, checks they are discovered, and enforces the 500 ms discovery budget.
 
 ## Releases and versioning
 

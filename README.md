@@ -1,280 +1,225 @@
 <p align="center">
-  <img src="src-tauri/icons/icon.png" width="96" alt="portbaba icon" />
+  <img src="public/portbaba.png" width="112" alt="Port Baba logo" />
 </p>
 
-<h1 align="center">portbaba</h1>
+<h1 align="center">Port Baba</h1>
+
 <p align="center"><strong>Find it. Kill it. Free the port.</strong></p>
 
 <p align="center">
-  <img alt="platforms" src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-informational" />
-  <img alt="built with Tauri 2" src="https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white" />
-  <a href="https://github.com/sayeedjoy/portbaba/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/sayeedjoy/portbaba/actions/workflows/ci.yml/badge.svg" /></a>
+  A fast, local-first desktop app for finding and stopping the process that is blocking a development port.
 </p>
 
-A cross-platform desktop app that shows which process is holding a local
-development port and frees it in one click — no `lsof`, no `netstat`, no PIDs to
-copy between terminal windows.
+<p align="center">
+  <img alt="Windows, macOS, and Linux" src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-2563eb" />
+  <img alt="Tauri 2" src="https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white" />
+  <img alt="React 19" src="https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white" />
+  <a href="https://github.com/sayeedjoy/portbaba/actions/workflows/ci.yml"><img alt="CI status" src="https://github.com/sayeedjoy/portbaba/actions/workflows/ci.yml/badge.svg" /></a>
+</p>
 
-Built with **Tauri 2**, **React 19**, **TypeScript**, **Tailwind CSS 4** and
-**shadcn/ui** (Radix primitives).
+<p align="center">
+  <a href="https://github.com/sayeedjoy/portbaba/releases"><strong>Releases</strong></a>
+  ·
+  <a href="https://github.com/sayeedjoy/portbaba/issues">Report an issue</a>
+</p>
 
-## What it does
+---
 
-Type a port number and portbaba tells you what is holding it *while you
-type* — process, PID, and where possible the framework and project directory: 
+Port Baba replaces the usual `lsof` / `netstat` / PID-copying loop with one focused workflow: enter a port, see exactly what owns it, and free it safely.
 
+```text
+Port 5173
+Held by node at PID 18420 — Vite in my-dashboard
 ```
-5432
-Held by postgres at PID 794 — PostgreSQL in postgresql@18
-```
 
-Then one click frees it.
+Everything runs on your machine. Port Baba does not need an account, does not send process data to a server, and does not silently elevate its privileges.
 
-- **Live port check** — the dashboard checks the port as you type, before you commit to anything.
-- **Project detection** — a `node` process becomes "Vite in my-dashboard", so you can tell two dev servers apart.
-- **Menu bar / tray menu** — every port in use right now, with the process holding it, without opening the window. Click one to free it, or "Kill All Processes" to free the lot.
-- **Favourites** — ports you use often, shown as occupancy tiles here and under "Kill Favourite Port" in the tray menu.
-- **System-process protection** — `launchd`, `systemd`, `svchost.exe` and friends are refused, not silently killed.
-- **Graceful and forced termination** — SIGTERM/`taskkill` first, SIGKILL/`TerminateProcess` when you ask for it.
-- **Command palette** — `Ctrl/Cmd+K`; type a bare port number and it becomes "Kill port 3000".
-- **Range scanning** — type `3000-3100` in the Ports search.
-- **Local history** — every termination is recorded on this machine. Nothing leaves it.
+## Why Port Baba?
 
-## Requirements
+| Capability | What it gives you |
+| --- | --- |
+| Instant port lookup | Check a port while you type and see its process, PID, protocol, and state. |
+| Project detection | Turn a generic `node` process into useful context such as “Vite in my-dashboard.” |
+| One-click cleanup | Ask for a graceful shutdown first, with force kill available when enabled. |
+| Complete port view | Browse TCP and optional UDP sockets, filter by process or port, and scan ranges such as `3000-3100`. |
+| Process view | Group every open port by the process that owns it and stop related ports together. |
+| Favourites and presets | Keep common development ports visible and act on them from the app or tray. |
+| Tray and global shortcut | Inspect or free ports without keeping the main window open. |
+| Local history | Review up to 500 recent termination attempts stored only on this device. |
 
-- [Rust](https://rustup.rs) (stable) and the platform's Tauri prerequisites — see
-  [tauri.app/start/prerequisites](https://tauri.app/start/prerequisites/)
-- Node 20+ and [pnpm](https://pnpm.io)
+### Safety by default
 
-## Running it
+- Confirmation is enabled before termination.
+- Known operating-system processes are protected.
+- Graceful termination is attempted before force kill.
+- Invalid ports and PIDs are rejected by the Rust backend.
+- Permission errors are reported clearly; the app never escalates privileges for you.
+
+Some processes owned by another user or by the operating system may require Administrator or root access. Port Baba reports that limitation and leaves the process running.
+
+## Install
+
+Prebuilt installers are published on [GitHub Releases](https://github.com/sayeedjoy/portbaba/releases). If no release is listed yet, use the [source build](#build-from-source).
+
+The release workflow produces:
+
+| Platform | Package |
+| --- | --- |
+| Windows x64 | NSIS `.exe` installer |
+| macOS | Universal `.dmg` for Apple Silicon and Intel |
+
+Linux is supported by the codebase and can be [built from source](#build-from-source). Packaging must run on the target operating system because Tauri uses each platform's native toolchain.
+
+## Everyday shortcuts
+
+Use `Ctrl` on Windows/Linux and `⌘` on macOS.
+
+| Shortcut | Action |
+| --- | --- |
+| `Ctrl/⌘ + K` | Open the command palette |
+| `Ctrl/⌘ + Shift + K` | Focus Quick Kill |
+| `Ctrl/⌘ + F` | Search ports |
+| `Ctrl/⌘ + R` | Refresh port data |
+| `Ctrl/⌘ + B` | Collapse or expand the sidebar |
+
+The Quick Kill shortcut can also be enabled as a system-wide shortcut in Settings.
+
+## Development
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) 20 or newer
+- [pnpm](https://pnpm.io/) 10
+- [Rust](https://rustup.rs/) stable
+- The [Tauri 2 prerequisites](https://v2.tauri.app/start/prerequisites/) for your operating system
+
+On Windows, install the Microsoft C++ Build Tools with the **Desktop development with C++** workload. WebView2 is included with current Windows versions and is bootstrapped by the NSIS installer when missing.
+
+### Run locally
 
 ```bash
+git clone https://github.com/sayeedjoy/portbaba.git
+cd portbaba
 pnpm install
 pnpm tauri dev
 ```
 
-The dev server needs port 1420. (Yes, we know.)
+Tauri starts the Vite development server on port `1420`. The port is intentionally strict, so development stops with a clear error if another process already owns it.
 
-## Building releases
+### Useful commands
 
-```bash
-pnpm tauri build
-```
-
-That builds the frontend, compiles the Rust binary in release mode and produces
-every installer the host platform supports. Everything lands under
-`src-tauri/target/release/bundle/`.
-
-| Platform | Command | Output |
-| --- | --- | --- |
-| macOS | `pnpm tauri build` | `dmg/portbaba_0.1.0_aarch64.dmg`, `macos/portbaba.app` |
-| Windows | `pnpm tauri build` | `nsis/portbaba_0.1.0_x64-setup.exe`, `msi/portbaba_0.1.0_x64_en-US.msi` |
-| Linux | `pnpm tauri build` | `deb/`, `rpm/`, `appimage/` |
-
-Use `--bundles` to produce just one format. The accepted values depend on the
-host — `app` and `dmg` on macOS, `nsis` and `msi` on Windows:
-
-```bash
-pnpm tauri build --bundles dmg     # macOS disk image only
-pnpm tauri build --bundles nsis    # Windows .exe installer only
-```
-
-`--no-bundle` skips packaging entirely and leaves you a bare executable at
-`src-tauri/target/release/portbaba` (`portbaba.exe` on Windows) — the quickest
-way to check that a release build compiles.
-
-### macOS
-
-A plain build targets the machine you are on. For a binary that runs natively on
-both Apple Silicon and Intel, install the second target once and ask for a
-universal build:
-
-```bash
-rustup target add x86_64-apple-darwin aarch64-apple-darwin
-pnpm tauri build --target universal-apple-darwin
-```
-
-The universal `.dmg` is roughly twice the size, since it carries both slices.
-
-**Gatekeeper.** Builds are ad-hoc signed, which is enough to run locally but not
-to distribute: anyone else who opens the `.dmg` gets "portbaba is damaged and
-can't be opened". To ship it you need an Apple Developer ID certificate, set
-before building:
-
-```bash
-export APPLE_SIGNING_IDENTITY="Developer ID Application: Your Name (TEAMID)"
-export APPLE_ID="you@example.com"
-export APPLE_PASSWORD="app-specific-password"   # not your Apple ID password
-export APPLE_TEAM_ID="TEAMID"
-pnpm tauri build
-```
-
-With those set, Tauri signs the app and submits it to Apple for notarization as
-part of the build.
-
-Without them, the usual right-click → Open trick will not help on Apple Silicon —
-a quarantined ad-hoc-signed app is reported as damaged rather than merely
-unidentified. Testers have to clear the quarantine flag explicitly:
-
-```bash
-xattr -dr com.apple.quarantine "/Applications/portbaba.app"
-```
-
-### Windows
-
-Building on Windows needs, in addition to Rust and Node:
-
-- **Microsoft C++ Build Tools** with the "Desktop development with C++" workload
-- **WebView2 runtime** — preinstalled on Windows 11 and current Windows 10; the
-  NSIS installer bootstraps it for anyone who lacks it
-
-```powershell
-pnpm install
-pnpm tauri build
-```
-
-This produces two installers: an NSIS `.exe` (the one to hand people — it
-bootstraps WebView2 and installs per-user without administrator rights) and a
-WiX `.msi` (better suited to Group Policy deployment, but it will not install
-WebView2 for you).
-
-Signing is optional but stops SmartScreen warning about an unknown publisher. It
-needs an Authenticode certificate installed in the Windows certificate store,
-referenced from `src-tauri/tauri.conf.json`:
-
-```json
-"bundle": {
-  "windows": {
-    "certificateThumbprint": "A1B2C3…",
-    "digestAlgorithm": "sha256",
-    "timestampUrl": "http://timestamp.digicert.com"
-  }
-}
-```
-
-(Not to be confused with `TAURI_SIGNING_PRIVATE_KEY`, which signs *update
-manifests* for the updater plugin and has nothing to do with Authenticode.)
-
-### Building for the other platform
-
-**You cannot build a Windows `.exe` on macOS, or a macOS `.dmg` on Windows.**
-Each installer needs its platform's own toolchain and SDK — WiX and the MSVC
-linker on Windows, `hdiutil` and `codesign` on macOS. There is no cross-compile
-shortcut worth using here.
-
-The practical answer is CI. [`.github/workflows/release.yml`](.github/workflows/release.yml)
-builds all three platforms on their own runners and collects the installers into
-a single draft GitHub release. Push a tag:
-
-```bash
-git tag v0.1.0 && git push origin v0.1.0
-```
-
-macOS is built as a universal binary, Linux on Ubuntu 22.04 so the AppImage and
-`.deb` still run on older distributions. You can also trigger it by hand from the
-Actions tab without tagging, which produces a `v<run number>-dev` draft.
-
-To sign, add the certificate values as repository secrets — the workflow already
-passes them through, and skips signing when they are absent:
-
-| Secret | Platform |
+| Command | Purpose |
 | --- | --- |
-| `APPLE_CERTIFICATE`, `APPLE_CERTIFICATE_PASSWORD` | macOS — the exported Developer ID `.p12`, base64-encoded |
-| `APPLE_SIGNING_IDENTITY`, `APPLE_TEAM_ID` | macOS |
-| `APPLE_ID`, `APPLE_PASSWORD` | macOS — notarization, using an app-specific password |
+| `pnpm dev` | Run only the Vite frontend |
+| `pnpm build` | Type-check TypeScript and create the production frontend bundle |
+| `pnpm preview` | Preview the built frontend |
+| `pnpm tauri dev` | Run the complete desktop app in development mode |
+| `pnpm tauri build` | Build an optimized app and native installer(s) |
+| `pnpm tauri build --no-bundle` | Compile a release binary without packaging an installer |
+| `cd src-tauri && cargo test` | Run the Rust unit and integration tests |
+| `cd src-tauri && cargo fmt --check` | Check Rust formatting |
+| `cd src-tauri && cargo clippy --all-targets -- -D warnings` | Run Rust lint checks used by CI |
 
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every push and
-pull request: `tsc` and the frontend bundle once, then `cargo fmt --check`,
-`cargo clippy -D warnings` and `cargo test` on all three platforms — the tests
-touch real sockets, so they have to run per platform rather than on one host.
+No environment file or external service is required for local development.
 
-### Version numbers
+## Architecture
 
-The version in the installer filenames comes from `version` in
-`src-tauri/tauri.conf.json`. Bump it there (and in `package.json` to match)
-before tagging a release.
+```text
+React UI  ── invoke ──▶  Tauri commands  ──▶  Rust services  ──▶  OS APIs
+```
 
-## Tests
+- **Frontend:** React 19, TypeScript, Vite, Tailwind CSS 4, shadcn/ui, Radix UI, and Zustand.
+- **Desktop shell:** Tauri 2 provides the window, tray, notifications, updater, autostart, and global shortcut integrations.
+- **Backend:** Rust discovers sockets, enriches process metadata, validates privileged requests, and performs termination.
+- **Persistence:** Settings, favourites, presets, and history are stored atomically in a local JSON file in the platform app-config directory.
+
+The webview never executes shell commands. [`src/services/tauri.ts`](src/services/tauri.ts) is the frontend's single IPC boundary, and every privileged action passes through a typed Rust command. Socket discovery uses platform APIs through `netstat2`; process metadata comes from `sysinfo`.
+
+### Repository layout
+
+```text
+portbaba/
+├── src/                         React frontend
+│   ├── components/              App components and shadcn/ui primitives
+│   ├── hooks/                   Port sync, kill flow, hotkeys, updater
+│   ├── pages/                   Dashboard, ports, processes, favourites, history
+│   ├── services/tauri.ts        Typed frontend-to-Rust boundary
+│   ├── stores/                  Zustand application state
+│   └── styles.css               Design tokens and light/dark themes
+├── src-tauri/
+│   ├── src/commands/            Tauri command handlers
+│   ├── src/services/            Port, process, and persistence services
+│   ├── src/platform/            Windows, macOS, and Linux behaviour
+│   ├── tests/                   Cross-platform integration tests
+│   └── tauri.conf.json          App, bundle, and updater configuration
+└── .github/workflows/           CI and release automation
+```
+
+### Adding or changing a command
+
+Keep the IPC contract synchronized across four places:
+
+1. Implement the command in `src-tauri/src/commands/`.
+2. Register it in the command handler in `src-tauri/src/lib.rs`.
+3. Add its frontend wrapper to `src/services/tauri.ts`.
+4. Mirror changed models in `src/types/system.ts` using camel-case serialized fields.
+
+Commands should return the shared Rust error type, validate untrusted inputs at the backend boundary, and keep blocking operating-system work off the UI thread.
+
+## Testing and quality
+
+Run the same core checks as CI before opening a pull request:
 
 ```bash
-cd src-tauri && cargo test
+pnpm build
+
+cd src-tauri
+cargo fmt --check
+cargo clippy --all-targets -- -D warnings
+cargo test
 ```
 
-The suite binds real sockets and asserts the app finds them, drives every Tauri
-command over the real IPC path with a mock runtime, and holds port discovery to
-the 500 ms budget from the spec.
+The Rust suite uses real sockets and the real process table for discovery tests. Command integration tests use Tauri's mock runtime and an isolated temporary config directory, so they do not touch your normal Port Baba settings.
+
+CI runs the frontend build once and runs Rust formatting, Clippy, and tests on Windows, macOS, and Linux.
+
+## Build from source
 
 ```bash
-pnpm build   # typecheck + production frontend bundle
+pnpm install --frozen-lockfile
+pnpm tauri build
 ```
 
-## How it works
+Bundles are written to `src-tauri/target/release/bundle/`. To create only one supported package format, pass it explicitly:
 
-```
-React frontend  ──invoke──▶  Tauri commands  ──▶  platform layer  ──▶  OS
-```
-
-The frontend never runs a shell command. Every privileged operation goes through
-a typed Rust command that validates its input first: ports are checked against
-1–65535, PIDs against 0, and paths must resolve to a real directory before they
-reach the platform opener.
-
-Socket enumeration uses native APIs on every target rather than parsing command
-output — `GetExtendedTcpTable`/`GetExtendedUdpTable` on Windows, netlink and
-`/proc` on Linux, `libproc` on macOS — via [`netstat2`](https://crates.io/crates/netstat2).
-Process metadata comes from [`sysinfo`](https://crates.io/crates/sysinfo).
-Termination goes through `kill(2)` directly on Unix so the app can tell
-"permission denied" apart from "it already exited", which is the difference
-between a useful error message and a confusing one.
-
-### Layout
-
-```
-src/                      React frontend
-├── components/           Table, dialogs, quick-kill, command palette
-│   ├── ui/               shadcn/ui primitives (Radix, cmdk, sonner)
-│   └── app/              portbaba's own presentational pieces
-├── pages/                Dashboard, Ports, Processes, Favourites, History, Settings
-├── hooks/                Port sync, kill flow, process details, hotkeys
-├── stores/               Zustand: settings, scan data, UI state
-├── services/tauri.ts     The only place that talks to Rust
-└── styles.css            Design tokens, light and dark
-
-src-tauri/src/            Rust backend
-├── commands/             The Tauri command surface
-├── services/             Port, process and local-state services
-├── platform/             Per-OS socket, signal and protection behaviour
-└── models/               Shared data model
+```bash
+pnpm tauri build --bundles nsis   # Windows
+pnpm tauri build --bundles dmg    # macOS
 ```
 
-### Components and theming
+For a universal macOS build:
 
-UI primitives come from [shadcn/ui](https://ui.shadcn.com) and live in
-`src/components/ui/` — they are part of this repo, so edit them freely. Add more
-with `pnpm dlx shadcn@latest add <name>`.
+```bash
+rustup target add aarch64-apple-darwin x86_64-apple-darwin
+pnpm tauri build --target universal-apple-darwin --bundles dmg
+```
 
-They are not themed with shadcn's default palette. `src/styles.css` maps each
-shadcn token onto the portbaba token that already means that thing
-(`--primary` → `--ink`, `--destructive` → `--danger`, `--card` → `--panel`, and
-so on), so components inherit this app's design rather than arriving with their
-own. Because those definitions reference custom properties, they re-resolve per
-theme automatically and only the base palette has to be maintained.
+## Releases and versioning
 
-Two adjustments worth knowing about:
+The release workflow is intentionally automated:
 
-- The `dark:` variant is redefined in `styles.css`. Tailwind's default keys off
-  `prefers-color-scheme`, which would ignore an explicit theme choice; ours
-  matches the same three states the palette uses.
-- Components import the class merger as a bare `cn` specifier. That is aliased
-  in `vite.config.ts` and `tsconfig.json` to `src/lib/utils.ts`, so the project
-  keeps one implementation (clsx + tailwind-merge).
+1. A non-documentation push to `main` increments the patch version.
+2. The workflow updates `package.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`, and `src-tauri/Cargo.lock`.
+3. It commits and tags the version, builds Windows and universal macOS packages, creates a GitHub release, and marks it as latest.
 
-## Permissions
+Do not bump versions manually for a normal change. For an intentional manual bump, use:
 
-Some processes belong to other users or to the system. portbaba reports that
-plainly and never escalates privileges on your behalf — if a process needs root
-or Administrator to stop, you are told, and it stays running until you decide.
+```bash
+bash .github/scripts/bump-version.sh <version>
+```
 
-## Specification
+The updater checks the `latest.json` artifact attached to the newest GitHub release.
 
-The full requirements this implements are in [docs/srs.md](docs/srs.md).
+## Contributing
+
+Issues and focused pull requests are welcome. Keep changes scoped, explain user-visible behaviour, update tests when behaviour changes, and make sure the quality checks above pass on your platform.
