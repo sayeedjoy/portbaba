@@ -36,6 +36,24 @@ jobs:
         with:
           fetch-depth: 0
 
+      # createUpdaterArtifacts is enabled in tauri.conf.json. Without the
+      # matching private key Tauri can build an installer, but fails when it
+      # tries to sign the updater artifact.
+      - name: Check updater signing secret
+        shell: bash
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          if [[ -z "$TAURI_SIGNING_PRIVATE_KEY" ]]; then
+            echo "::error::Add TAURI_SIGNING_PRIVATE_KEY to the repository's Actions secrets."
+            exit 1
+          fi
+          if [[ -z "$TAURI_SIGNING_PRIVATE_KEY_PASSWORD" ]]; then
+            echo "::error::Add TAURI_SIGNING_PRIVATE_KEY_PASSWORD to the repository's Actions secrets."
+            exit 1
+          fi
+
       - name: Work out next version
         id: bump
         shell: bash
@@ -147,12 +165,14 @@ jobs:
 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
         with:
           releaseId: ${{ needs.version.outputs.release_id }}
           tagName: ${{ needs.version.outputs.tag }}
           releaseDraft: true
-          retryAttempts: 3
+          retryAttempts: 0
           args: ${{ matrix.args }}
 
 
