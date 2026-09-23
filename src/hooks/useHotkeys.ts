@@ -28,6 +28,11 @@ export function useHotkeys(options: { focusQuickKill: () => void; focusSearch: (
         setPaletteOpen(!useUi.getState().paletteOpen);
         return;
       }
+      if (key === "b") {
+        event.preventDefault();
+        useUi.getState().toggleSidebar();
+        return;
+      }
       if (key === "r") {
         event.preventDefault();
         void refresh();

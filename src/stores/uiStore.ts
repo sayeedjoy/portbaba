@@ -35,6 +35,10 @@ interface UiState {
   paletteOpen: boolean;
   setPaletteOpen: (open: boolean) => void;
 
+  /** Sidebar shows icons only. Remembered across launches. */
+  sidebarCollapsed: boolean;
+  toggleSidebar: () => void;
+
   aboutOpen: boolean;
   setAboutOpen: (open: boolean) => void;
 
@@ -59,12 +63,33 @@ interface UiState {
 
 let freedGeneration = 0;
 
+const SIDEBAR_KEY = "portbaba.sidebarCollapsed";
+
+function readSidebarCollapsed(): boolean {
+  try {
+    return localStorage.getItem(SIDEBAR_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
 export const useUi = create<UiState>((set, get) => ({
   route: "dashboard",
   navigate: (route) => set({ route, paletteOpen: false }),
 
   paletteOpen: false,
   setPaletteOpen: (paletteOpen) => set({ paletteOpen }),
+
+  sidebarCollapsed: readSidebarCollapsed(),
+  toggleSidebar: () => {
+    const sidebarCollapsed = !get().sidebarCollapsed;
+    set({ sidebarCollapsed });
+    try {
+      localStorage.setItem(SIDEBAR_KEY, sidebarCollapsed ? "1" : "0");
+    } catch {
+      // Not remembering the choice is fine.
+    }
+  },
 
   aboutOpen: false,
   setAboutOpen: (aboutOpen) => set({ aboutOpen }),
