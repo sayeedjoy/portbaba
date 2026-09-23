@@ -61,11 +61,10 @@ pub fn run() {
                 apply_settings(app.handle(), &settings);
             }
 
-            // §38 — "Start Minimized".
-            if settings.start_minimized {
-                if let Some(window) = app.get_webview_window(MAIN_WINDOW) {
-                    let _ = window.hide();
-                }
+            // §38 — "Start Minimized". The window is created hidden, so it is
+            // only ever shown when wanted — hiding it after the fact flashes.
+            if !settings.start_minimized {
+                show_main_window(app.handle());
             }
 
             Ok(())
