@@ -39,7 +39,7 @@ export function ProcessDetails() {
       <DialogContent className="max-w-xl gap-0 p-0">
         <DialogHeader className="flex-row items-start justify-between gap-4 space-y-0 px-6 py-5">
           <div className="min-w-0">
-            <DialogTitle className="truncate text-[19px]">
+            <DialogTitle className="truncate font-mono text-[16px]">
               {loading ? "Loading…" : (process?.name ?? `PID ${pid}`)}
             </DialogTitle>
             <DialogDescription className="mt-0.5">
@@ -69,25 +69,25 @@ export function ProcessDetails() {
         ) : (
           <>
             <dl className="divide-y px-6">
-              <Field label="Process ID">{process.pid}</Field>
+              <Field label="pid">{process.pid}</Field>
 
               {process.ports.length > 0 && (
-                <Field label={process.ports.length === 1 ? "Port" : "Ports"}>
-                  {process.ports.join(", ")}
+                <Field label="ports">
+                  {process.ports.map((p) => `:${p}`).join("  ")}
                 </Field>
               )}
 
-              {process.user && <Field label="User">{process.user}</Field>}
+              {process.user && <Field label="user">{process.user}</Field>}
 
               {process.runTime !== undefined && (
-                <Field label="Started">{relativeTime(process.runTime)}</Field>
+                <Field label="started">{relativeTime(process.runTime)}</Field>
               )}
 
-              <Field label="Memory">{formatBytes(process.memoryBytes)}</Field>
+              <Field label="memory">{formatBytes(process.memoryBytes)}</Field>
 
               {process.executable && (
-                <Field label="Executable">
-                  <span className="selectable font-mono text-[12.5px] break-all">
+                <Field label="exe">
+                  <span className="selectable text-[12.5px] break-all">
                     {process.executable}
                   </span>
                 </Field>
@@ -95,8 +95,8 @@ export function ProcessDetails() {
 
               {/* FR-017 — the command that started it, verbatim. */}
               {process.command && (
-                <Field label="Command">
-                  <span className="selectable font-mono text-[12.5px] break-all">
+                <Field label="command">
+                  <span className="selectable text-[12.5px] break-all">
                     {process.command}
                   </span>
                 </Field>
@@ -104,8 +104,8 @@ export function ProcessDetails() {
 
               {/* FR-018 — where the project lives. */}
               {process.project && (
-                <Field label="Project">
-                  <span className="selectable font-mono text-[12.5px] break-all">
+                <Field label="project">
+                  <span className="selectable text-[12.5px] break-all">
                     {process.project.directory}
                   </span>
                 </Field>
@@ -156,7 +156,7 @@ export function ProcessDetails() {
                       killProcess(socket);
                     }}
                   >
-                    Terminate
+                    Kill
                   </Button>
                 )}
               </div>
@@ -170,9 +170,9 @@ export function ProcessDetails() {
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="grid grid-cols-[128px_1fr] items-baseline gap-4 py-3">
-      <dt className="text-ink-muted">{label}</dt>
-      <dd className="selectable min-w-0">{children}</dd>
+    <div className="grid grid-cols-[88px_1fr] items-baseline gap-4 py-2.5">
+      <dt className="font-mono text-[12px] text-ink-muted">{label}</dt>
+      <dd className="selectable min-w-0 font-mono text-[12.5px]">{children}</dd>
     </div>
   );
 }

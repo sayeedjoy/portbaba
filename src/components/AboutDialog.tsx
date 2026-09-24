@@ -23,14 +23,14 @@ export function AboutDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="gap-0 rounded-2xl border-hairline bg-panel p-0 shadow-[var(--shadow-lift)] sm:max-w-[420px]">
+      <DialogContent className="gap-0 rounded-md border-hairline bg-panel p-0 shadow-[var(--shadow-lift)] sm:max-w-[420px]">
         <div className="flex flex-col items-center px-6 pt-8 pb-6 text-center">
           <img src={appIcon} alt="" className="size-16" draggable={false} />
-          <DialogTitle className="mt-4 text-[20px] font-semibold tracking-[-0.015em]">
-            Port <span className="text-[var(--focus)]">Baba</span>
+          <DialogTitle className="mt-4 font-mono text-[18px] font-semibold">
+            portbaba
           </DialogTitle>
           {version && (
-            <p className="mt-1 font-mono text-[13px] text-[var(--focus)]">v{version}</p>
+            <p className="mt-1 font-mono text-[12.5px] text-ink-muted">v{version}</p>
           )}
           <DialogDescription className="mt-2 text-ink-soft">
             Find it. Kill it. Free the port.
@@ -43,7 +43,7 @@ export function AboutDialog() {
             label="Repository"
             onClick={() => void openUrl(`https://github.com/${REPO}`)}
           >
-            <span className="font-mono text-[12.5px] text-ink-muted">{REPO}</span>
+            <span className="font-mono text-[12px] text-ink-muted">{REPO}</span>
           </LinkRow>
           <LinkRow
             icon={<History aria-hidden />}
@@ -74,7 +74,7 @@ export function AboutDialog() {
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="h-8 rounded-lg px-3 text-[13px] font-medium text-ink-soft hover:bg-raised hover:text-ink"
+            className="h-8 rounded-sm px-3 text-[13px] font-medium text-ink-soft hover:bg-raised hover:text-ink"
           >
             Close
           </button>

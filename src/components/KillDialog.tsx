@@ -53,7 +53,7 @@ export function KillDialog() {
       >
         <AlertDialogHeader>
           <AlertDialogTitle>
-            {request.force ? "Force kill" : "Terminate"} {request.title.toLowerCase()}?
+            {request.force ? "Force kill" : "Kill"} {request.title.toLowerCase()}?
           </AlertDialogTitle>
           <AlertDialogDescription className="sr-only">
             Review what will be stopped before confirming.
@@ -61,7 +61,7 @@ export function KillDialog() {
         </AlertDialogHeader>
 
         {/* What exactly is about to happen. */}
-        <div className="overflow-hidden rounded-xl border">
+        <div className="overflow-hidden rounded-md border">
           {request.targets.length === 0 ? (
             <p className="px-4 py-3 text-ink-soft">
               Nothing is holding port {request.port} right now. Running this will simply
@@ -73,22 +73,25 @@ export function KillDialog() {
                 <li
                   key={target.id}
                   className={cn(
-                    "flex items-center gap-3 px-4 py-2.5",
+                    "flex items-center gap-3 px-3 py-2",
                     target.protected && "bg-[var(--protected-wash)]",
                   )}
                 >
-                  <span className="w-14 shrink-0 text-[15px] font-semibold">
+                  <span className="w-16 shrink-0 font-mono font-semibold">
+                    <span aria-hidden className="font-normal text-ink-muted">
+                      :
+                    </span>
                     {target.port}
                   </span>
                   <ProcessIcon entry={target} />
-                  <span className="min-w-0 flex-1 truncate">{target.processName}</span>
-                  <span className="shrink-0 text-[13px] text-ink-muted">
-                    PID {target.pid}
+                  <span className="min-w-0 flex-1 truncate font-mono text-[12.5px]">{target.processName}</span>
+                  <span className="shrink-0 font-mono text-[12px] text-ink-muted">
+                    pid {target.pid}
                   </span>
                 </li>
               ))}
               {request.targets.length > 6 && (
-                <li className="px-4 py-2.5 text-[13px] text-ink-muted">
+                <li className="px-3 py-2 text-[12px] text-ink-muted">
                   and {request.targets.length - 6} more
                 </li>
               )}
@@ -144,7 +147,7 @@ export function KillDialog() {
             className={cn(buttonVariants({ variant: "destructive" }))}
             onClick={() => void execute(request)}
           >
-            {request.force ? "Force kill" : "Terminate"}
+            {request.force ? "Force kill" : "Kill"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -166,7 +169,7 @@ function Warning({
   return (
     <div
       className={cn(
-        "flex gap-3 rounded-xl p-3.5",
+        "flex gap-3 rounded-md p-3",
         tone === "protected" ? "bg-[var(--protected-wash)]" : "bg-raised",
       )}
     >

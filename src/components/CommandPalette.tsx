@@ -157,8 +157,8 @@ export function CommandPalette() {
                 <span>
                   {entry.processName} on port {entry.port}
                 </span>
-                <span className="ml-auto text-[12.5px] text-ink-muted">
-                  PID {entry.pid}
+                <span className="ml-auto font-mono text-[12px] text-ink-muted">
+                  pid {entry.pid}
                 </span>
               </CommandItem>
             ))}
