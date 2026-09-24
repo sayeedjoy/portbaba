@@ -79,7 +79,10 @@ export const PortRow = memo(function PortRow({
         </TableCell>
       )}
 
-      <TableCell className="pl-4 text-[15px] font-semibold tabular-nums">
+      <TableCell className="pl-4 font-mono text-[14px] font-semibold">
+        <span aria-hidden className="font-normal text-ink-muted">
+          :
+        </span>
         {port.port}
       </TableCell>
 
@@ -90,19 +93,21 @@ export const PortRow = memo(function PortRow({
           {owner ? (
             <>
               <span className="shrink-0 truncate font-medium">{owner}</span>
-              <span className="min-w-0 truncate text-[13px] text-ink-muted">
+              <span className="min-w-0 truncate font-mono text-[12px] text-ink-muted">
                 {port.processName}
               </span>
             </>
           ) : (
-            <span className="shrink-0 truncate">{port.processName}</span>
+            <span className="shrink-0 truncate font-mono">{port.processName}</span>
           )}
           {port.protected && <ProtectedTag className="shrink-0" />}
         </div>
       </TableCell>
 
-      <TableCell className="tabular-nums text-ink-soft">{port.pid || "—"}</TableCell>
-      {showProtocol && <TableCell className="text-ink-soft">{port.protocol}</TableCell>}
+      <TableCell className="font-mono text-ink-soft">{port.pid || "—"}</TableCell>
+      {showProtocol && (
+        <TableCell className="font-mono text-ink-soft">{port.protocol.toLowerCase()}</TableCell>
+      )}
       <TableCell>
         <ReachLabel addresses={addresses} />
       </TableCell>
@@ -119,16 +124,18 @@ export const PortRow = memo(function PortRow({
             <Button
               size="sm"
               variant="ghost"
-              className="bg-[var(--danger-wash)] text-[var(--danger)] hover:bg-[var(--danger)] hover:text-white"
+              className="h-7 bg-[var(--danger-wash)] px-2.5 text-[var(--danger)] hover:bg-[var(--danger)] hover:text-white"
               onClick={() => onKill(port, false)}
+              aria-label={`Kill ${port.processName} on port ${port.port}`}
             >
-              Terminate
+              Kill
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   size="icon-sm"
                   variant="ghost"
+                  className="size-7"
                   aria-label={`More actions for ${port.processName} on port ${port.port}`}
                 >
                   <MoreHorizontal aria-hidden />
@@ -153,7 +160,7 @@ export const PortRow = memo(function PortRow({
           </div>
         ) : (
           // §49 — the socket is real but its owner is not ours to see.
-          <p className="text-right text-[13px] text-ink-muted">Owner not visible</p>
+          <p className="text-right text-[12px] text-ink-muted">owner hidden</p>
         )}
       </TableCell>
     </TableRow>
@@ -161,38 +168,38 @@ export const PortRow = memo(function PortRow({
 });
 
 /**
- * Bind addresses translated into who can connect. The widest reach wins: a
- * server on both 127.0.0.1 and 0.0.0.0 is reachable from the network.
+ * The bind address itself, as a developer would read it in netstat. The widest
+ * one is shown, because it decides who can connect: a server on both
+ * 127.0.0.1 and 0.0.0.0 is reachable from the network. The tooltip says what
+ * that means in words, and lists every address the row stands for.
  */
 function ReachLabel({ addresses }: { addresses: string[] }) {
   const reaches = addresses.map(reachOf);
-  const specific = addresses.find((a) => reachOf(a) === "specific");
-  const label = reaches.includes("everywhere")
-    ? "Network"
-    : specific
-      ? specific.replace(/^\[|\]$/g, "")
-      : "This computer";
-  const hint = reaches.includes("everywhere")
+  const shown =
+    addresses[reaches.indexOf("everywhere")] ??
+    addresses[reaches.indexOf("specific")] ??
+    addresses[0];
+  const exposed = reaches.includes("everywhere");
+  const extra = new Set(addresses).size - 1;
+  const hint = exposed
     ? "Other devices on your network can connect."
-    : specific
+    : reaches.includes("specific")
       ? "Reachable on this one interface."
       : "Only programs on this computer can connect.";
 
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span
-          className={cn(
-            "cursor-default truncate text-[13px]",
-            label === "Network" ? "text-ink" : "text-ink-soft",
-          )}
-        >
-          {label}
+        <span className="flex min-w-0 cursor-default items-baseline gap-1.5 font-mono text-[12.5px]">
+          <span className={cn("truncate", exposed ? "text-ink" : "text-ink-soft")}>
+            {shown}
+          </span>
+          {extra > 0 && <span className="shrink-0 text-ink-muted">+{extra}</span>}
         </span>
       </TooltipTrigger>
       <TooltipContent className="max-w-64">
-        <p>{hint}</p>
-        <p className="mt-1 font-mono text-[12px] opacity-80">{addresses.join("  ·  ")}</p>
+        <p className="text-[12.5px]">{hint}</p>
+        <p className="mt-1 font-mono text-[12px] opacity-80">{addresses.join("  ")}</p>
       </TooltipContent>
     </Tooltip>
   );

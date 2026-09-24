@@ -31,7 +31,7 @@ export function PortBerth({
   return (
     <div
       className={cn(
-        "group relative flex flex-col justify-between rounded-xl border bg-panel p-3.5 transition-colors duration-150",
+        "group relative flex flex-col justify-between rounded-md border bg-panel p-3 transition-colors duration-150",
         occupied
           ? "border-[var(--occupied)]/45 bg-[var(--occupied-wash)]"
           : "border-hairline",
@@ -42,13 +42,14 @@ export function PortBerth({
         <div className="min-w-0">
           <p
             className={cn(
-              "text-[26px] leading-none font-bold tracking-[-0.02em]",
+              "font-mono text-[22px] leading-none font-semibold",
               occupied && "text-[var(--occupied)]",
             )}
           >
+            <span aria-hidden className="font-normal text-ink-muted">:</span>
             {favorite.port}
           </p>
-          <p className="mt-1.5 truncate text-[13px] text-ink-soft">{favorite.label}</p>
+          <p className="mt-1.5 truncate text-[12.5px] text-ink-soft">{favorite.label}</p>
         </div>
 
         {onRemove && (
@@ -70,7 +71,7 @@ export function PortBerth({
             <button
               type="button"
               onClick={() => onInspect(holder.pid)}
-              className="min-w-0 flex-1 truncate rounded px-1 py-0.5 text-left text-[13px] text-ink hover:bg-panel/60"
+              className="min-w-0 flex-1 truncate rounded-sm px-1 py-0.5 text-left font-mono text-[12px] text-ink hover:bg-panel/60"
               title={`${holder.processName} — PID ${holder.pid}`}
             >
               {holder.processName}
@@ -78,13 +79,16 @@ export function PortBerth({
             <button
               type="button"
               onClick={() => onFree(favorite.port)}
-              className="shrink-0 rounded-md border border-[var(--danger)]/35 px-2 py-1 text-[12.5px] font-medium text-[var(--danger)] hover:bg-[var(--danger)] hover:text-white"
+              className="shrink-0 rounded-sm border border-[var(--danger)]/35 px-2 py-0.5 text-[12px] font-medium text-[var(--danger)] hover:bg-[var(--danger)] hover:text-white"
             >
               Kill
             </button>
           </div>
         ) : (
-          <p className="px-1 text-[13px] text-ink-muted">Available</p>
+          <p className="flex items-center gap-1.5 px-1 text-[12.5px] text-ink-muted">
+            <span aria-hidden className="size-1.5 rounded-full bg-[var(--free)]" />
+            free
+          </p>
         )}
       </div>
     </div>

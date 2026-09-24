@@ -73,7 +73,7 @@ export function PortTable({ ports, selection, onSelectionChange, empty }: PortTa
 
   return (
     <Table>
-      <TableHeader>
+      <TableHeader className="font-mono">
         <TableRow className="hover:bg-transparent">
           {/* Everything except Process is fixed width, so the one column that
               actually varies in length gets all the remaining space. */}
@@ -86,14 +86,16 @@ export function PortTable({ ports, selection, onSelectionChange, empty }: PortTa
               />
             </TableHead>
           )}
-          <TableHead className="w-[76px] pl-4">Port</TableHead>
-          <TableHead>Process</TableHead>
-          <TableHead className="w-[76px]">PID</TableHead>
+          <TableHead className="w-[84px] pl-4">port</TableHead>
+          <TableHead>process</TableHead>
+          <TableHead className="w-[80px]">pid</TableHead>
           {/* Without UDP every row is TCP, and a column that never changes is noise. */}
-          {showUdp && <TableHead className="w-[68px]">Protocol</TableHead>}
-          <TableHead className="w-[132px]">Reachable from</TableHead>
-          <TableHead className="w-[112px]">Status</TableHead>
-          <TableHead className="w-[152px] pr-3 text-right">Actions</TableHead>
+          {showUdp && <TableHead className="w-[60px]">proto</TableHead>}
+          <TableHead className="w-[156px]">bind</TableHead>
+          <TableHead className="w-[104px]">state</TableHead>
+          <TableHead className="w-[104px] pr-3 text-right">
+            <span className="sr-only">Actions</span>
+          </TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
