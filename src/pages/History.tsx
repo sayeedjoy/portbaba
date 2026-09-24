@@ -23,7 +23,7 @@ export function History() {
   return (
     <div className="mx-auto max-w-5xl px-6 py-6">
       <PageHeader
-        title="History"
+        title="history"
         description={
           history.length
             ? `${pluralise(history.length, "action")}, stored on this machine only`
@@ -45,21 +45,21 @@ export function History() {
         <Panel>
           <table className="w-full border-collapse text-left">
             <thead>
-              <tr className="border-b border-hairline text-[13px] text-ink-muted">
-                <th scope="col" className="w-28 py-2 pl-4 font-medium">
-                  Time
+              <tr className="border-b border-hairline bg-raised/50 font-mono text-[12px] text-ink-muted">
+                <th scope="col" className="w-32 py-2 pl-4 font-normal">
+                  time
                 </th>
-                <th scope="col" className="w-20 py-2 pr-4 font-medium">
-                  Port
+                <th scope="col" className="w-20 py-2 pr-4 font-normal">
+                  port
                 </th>
-                <th scope="col" className="py-2 pr-4 font-medium">
-                  Process
+                <th scope="col" className="py-2 pr-4 font-normal">
+                  process
                 </th>
-                <th scope="col" className="w-28 py-2 pr-4 font-medium">
-                  Action
+                <th scope="col" className="w-28 py-2 pr-4 font-normal">
+                  action
                 </th>
-                <th scope="col" className="w-40 py-2 pr-4 font-medium">
-                  Result
+                <th scope="col" className="w-40 py-2 pr-4 font-normal">
+                  result
                 </th>
               </tr>
             </thead>
@@ -75,23 +75,34 @@ export function History() {
                     className="border-b border-hairline last:border-b-0"
                     title={entry.message}
                   >
-                    <td className="py-2.5 pl-4 text-ink-soft">
+                    <td className="py-2 pl-4 font-mono text-[12.5px] text-ink-soft">
                       <span className="text-ink">{formatClock(entry.timestamp)}</span>
-                      <span className="ml-2 text-[12.5px] text-ink-muted">
+                      <span className="ml-2 text-[12px] text-ink-muted">
                         {formatDate(entry.timestamp)}
                       </span>
                     </td>
-                    <td className="py-2.5 pr-4 font-semibold">{entry.port ?? "—"}</td>
-                    <td className="max-w-0 truncate py-2.5 pr-4">
+                    <td className="py-2 pr-4 font-mono font-semibold">
+                      {entry.port ? (
+                        <>
+                          <span aria-hidden className="font-normal text-ink-muted">
+                            :
+                          </span>
+                          {entry.port}
+                        </>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                    <td className="max-w-0 truncate py-2 pr-4 font-mono text-[12.5px]">
                       {entry.processName}
-                      <span className="ml-2 text-[12.5px] text-ink-muted">
-                        PID {entry.pid}
+                      <span className="ml-2 text-[12px] text-ink-muted">
+                        pid {entry.pid}
                       </span>
                     </td>
-                    <td className="py-2.5 pr-4 text-ink-soft">{entry.action}</td>
+                    <td className="py-2 pr-4 text-ink-soft">{entry.action}</td>
                     <td
                       className={cn(
-                        "py-2.5 pr-4",
+                        "py-2 pr-4",
                         failed ? "text-[var(--danger)]" : "text-[var(--free)]",
                       )}
                     >

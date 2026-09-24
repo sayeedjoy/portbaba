@@ -38,19 +38,19 @@ export function Processes() {
   return (
     <div className="mx-auto max-w-5xl px-6 py-6">
       <PageHeader
-        title="Processes"
+        title="processes"
         description={`${pluralise(groups.length, "process", "processes")} holding a port`}
       >
         <SearchBar
           value={query}
           onChange={setQuery}
-          placeholder="Search a process or port"
+          placeholder="Filter by process or port"
           className="w-[300px]"
         />
       </PageHeader>
 
       {bulkName && (
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-hairline bg-panel px-4 py-3">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-[var(--danger)]/30 bg-panel px-4 py-2.5">
           <p className="text-ink-soft">
             {pluralise(filtered.length, `${bulkName} process`, `${bulkName} processes`)} are
             holding{" "}
@@ -88,79 +88,82 @@ export function Processes() {
           />
         </Panel>
       ) : (
-        <div className="flex flex-col gap-2.5">
-          {filtered.map((group) => (
-            <Panel key={group.pid} className="p-4">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <h2 className="truncate text-[16px] font-semibold">{group.name}</h2>
-                    {group.protected && <ProtectedTag />}
+        <Panel>
+          <ul className="divide-y divide-hairline">
+            {filtered.map((group) => (
+              <li key={group.pid} className="p-4">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <h2 className="truncate font-mono text-[14px] font-semibold">{group.name}</h2>
+                      {group.protected && <ProtectedTag />}
+                    </div>
+
+                    <p className="mt-0.5 flex gap-3 font-mono text-[12px] text-ink-muted">
+                      <span>pid {group.pid}</span>
+                      {group.user && <span>{group.user}</span>}
+                    </p>
+
+                    {group.project && (
+                      <p className="mt-1 truncate text-[12.5px] text-ink-soft">
+                        {group.project.framework
+                          ? `${group.project.framework} in ${group.project.name}`
+                          : group.project.name}
+                      </p>
+                    )}
+
+                    {/* FR-017 — the command is often the only way to tell two
+                        node servers apart. */}
+                    {group.command && (
+                      <p
+                        className="selectable mt-1.5 truncate font-mono text-[12px] text-ink-muted"
+                        title={group.command}
+                      >
+                        <span aria-hidden className="text-ink-soft">$ </span>
+                        {truncateStart(group.command, 96)}
+                      </p>
+                    )}
                   </div>
 
-                  <p className="mt-0.5 text-[13px] text-ink-muted">
-                    PID {group.pid}
-                    {group.user && ` — ${group.user}`}
-                  </p>
-
-                  {group.project && (
-                    <p className="mt-1 truncate text-[13px] text-ink-soft">
-                      {group.project.framework
-                        ? `${group.project.framework} in ${group.project.name}`
-                        : group.project.name}
-                    </p>
-                  )}
-
-                  {/* FR-017 — the command is often the only way to tell two
-                      node servers apart. */}
-                  {group.command && (
-                    <p
-                      className="selectable mt-1.5 truncate font-mono text-[12px] text-ink-muted"
-                      title={group.command}
-                    >
-                      {truncateStart(group.command, 96)}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex shrink-0 items-center gap-1.5">
-                  <Button size="sm" variant="ghost" onClick={() => openDetails(group.pid)}>
-                    Details
-                  </Button>
-                  {allowForceKill && (
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    <Button size="sm" variant="ghost" onClick={() => openDetails(group.pid)}>
+                      Details
+                    </Button>
+                    {allowForceKill && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => killSelection(group.ports, true)}
+                      >
+                        Force
+                      </Button>
+                    )}
                     <Button
                       size="sm"
-                      variant="ghost"
-                      onClick={() => killSelection(group.ports, true)}
+                      variant="outline"
+                      onClick={() => killSelection(group.ports, false)}
                     >
-                      Force
+                      Kill
                     </Button>
-                  )}
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => killSelection(group.ports, false)}
-                  >
-                    Terminate
-                  </Button>
+                  </div>
                 </div>
-              </div>
 
-              <ul className="mt-3 flex flex-wrap gap-1.5">
-                {group.ports.map((port) => (
-                  <li
-                    key={port.id}
-                    className="rounded-md bg-raised px-2 py-1 text-[13px]"
-                    title={`${port.protocol} on ${port.address} — ${port.state}`}
-                  >
-                    <span className="font-semibold">{port.port}</span>
-                    <span className="ml-1.5 text-ink-muted">{port.protocol}</span>
-                  </li>
-                ))}
-              </ul>
-            </Panel>
-          ))}
-        </div>
+                <ul className="mt-2.5 flex flex-wrap gap-1.5 font-mono">
+                  {group.ports.map((port) => (
+                    <li
+                      key={port.id}
+                      className="rounded-sm border border-hairline bg-raised px-1.5 py-0.5 text-[12.5px]"
+                      title={`${port.protocol} on ${port.address} — ${port.state}`}
+                    >
+                      <span className="font-semibold">{port.port}</span>
+                      <span className="text-ink-muted">/{port.protocol.toLowerCase()}</span>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            ))}
+          </ul>
+        </Panel>
       )}
     </div>
   );

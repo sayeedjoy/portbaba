@@ -58,7 +58,7 @@ export function Favorites() {
   return (
     <div className="mx-auto max-w-5xl px-6 py-6">
       <PageHeader
-        title="Favourites"
+        title="favourites"
         description="Ports you use often, kept one click away here and in the tray"
       />
 
@@ -67,7 +67,7 @@ export function Favorites() {
           <Empty title="Save a port below and it will appear here and in the tray menu." />
         </Panel>
       ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(168px,1fr))] gap-2.5">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(176px,1fr))] gap-2.5">
           {favorites.map((favorite) => (
             <PortBerth
               key={favorite.id}
@@ -83,7 +83,7 @@ export function Favorites() {
       )}
 
       <Panel className="mt-6 p-5">
-        <h2 className="font-medium">Save a port</h2>
+        <h2 className="font-semibold">save a port</h2>
         <form onSubmit={add} className="mt-3 flex flex-wrap items-end gap-2">
           <Field
             label="Port"
@@ -115,15 +115,15 @@ export function Favorites() {
       {/* FR-015 — the preset catalogue: click to save, or edit the list itself. */}
       <section className="mt-6">
         <div className="mb-3 flex items-baseline justify-between gap-4">
-          <h2 className="font-medium">Common development ports</h2>
+          <h2 className="font-semibold">common dev ports</h2>
           <div className="flex items-center gap-3">
             {presets.length > 0 && (
               <button
                 type="button"
                 onClick={() => setEditingPresets(!editingPresets)}
-                className="text-[13px] text-ink-muted hover:text-ink"
+                className="text-[12.5px] text-ink-muted hover:text-ink"
               >
-                {editingPresets ? "Done" : "Edit list"}
+                {editingPresets ? "done" : "edit list"}
               </button>
             )}
             <button
@@ -136,9 +136,9 @@ export function Favorites() {
                     toast("danger", e instanceof Error ? e.message : String(e)),
                   );
               }}
-              className="text-[13px] text-ink-muted hover:text-ink"
+              className="text-[12.5px] text-ink-muted hover:text-ink"
             >
-              Restore defaults
+              restore defaults
             </button>
           </div>
         </div>
@@ -152,12 +152,12 @@ export function Favorites() {
             {(editingPresets ? presets : suggestions).map((preset) => (
               <div
                 key={preset.id}
-                className="flex items-baseline gap-2 rounded-lg border border-hairline bg-panel px-3 py-2"
+                className="flex items-baseline gap-2 rounded-sm border border-hairline bg-panel px-2.5 py-1.5"
               >
                 {editingPresets ? (
                   <>
-                    <span className="font-semibold">{preset.port}</span>
-                    <span className="text-[13px] text-ink-soft">{preset.name}</span>
+                    <span className="font-mono font-semibold">{preset.port}</span>
+                    <span className="text-[12.5px] text-ink-soft">{preset.name}</span>
                     <button
                       type="button"
                       onClick={() => {
@@ -187,8 +187,8 @@ export function Favorites() {
                     }}
                     className="flex items-baseline gap-2 text-left"
                   >
-                    <span className="font-semibold">{preset.port}</span>
-                    <span className="text-[13px] text-ink-soft">{preset.name}</span>
+                    <span className="font-mono font-semibold">{preset.port}</span>
+                    <span className="text-[12.5px] text-ink-soft">{preset.name}</span>
                   </button>
                 )}
               </div>
@@ -215,14 +215,14 @@ function Field({
 }) {
   return (
     <label className={`flex flex-col gap-1 ${width}`}>
-      <span className="text-[13px] text-ink-muted">{label}</span>
+      <span className="text-[12px] text-ink-muted">{label.toLowerCase()}</span>
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         spellCheck={false}
         autoComplete="off"
-        className="h-9 rounded-lg border border-hairline bg-raised px-3 outline-none focus-visible:border-hairline-strong"
+        className="h-9 rounded-sm border border-hairline bg-raised px-3 outline-none focus-visible:border-hairline-strong"
       />
     </label>
   );

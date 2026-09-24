@@ -22,9 +22,9 @@ export function Settings() {
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-6">
-      <PageHeader title="Settings" />
+      <PageHeader title="settings" description="saved to this machine as you change them" />
 
-      <Group title="General">
+      <Group title="general">
         <Row
           id="launch-at-startup"
           label="Launch at startup"
@@ -60,7 +60,7 @@ export function Settings() {
         </Row>
       </Group>
 
-      <Group title="Port scanner">
+      <Group title="scanner">
         <Row
           id="auto-refresh"
           label="Refresh automatically"
@@ -125,7 +125,7 @@ export function Settings() {
         </Row>
       </Group>
 
-      <Group title="Safety">
+      <Group title="safety">
         <Row
           id="confirm-before-kill"
           label="Confirm before terminating"
@@ -163,7 +163,7 @@ export function Settings() {
         </Row>
       </Group>
 
-      <Group title="Notifications and shortcuts">
+      <Group title="notifications">
         <Row
           id="notifications"
           label="Show desktop notifications"
@@ -190,7 +190,7 @@ export function Settings() {
         </Row>
       </Group>
 
-      <Group title="Appearance">
+      <Group title="appearance">
         <Row id="theme" label="Theme">
           <Select
             value={settings.theme}
@@ -209,7 +209,7 @@ export function Settings() {
       </Group>
 
       {system && (
-        <p className="mt-8 text-[13px] text-ink-muted">
+        <p className="mt-8 text-[12px] text-ink-muted">
           Port Baba {system.appVersion} on {system.osVersion ?? system.os} (
           {system.arch}).{" "}
           {system.elevated
@@ -224,8 +224,12 @@ export function Settings() {
 function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="mb-5">
-      <h2 className="mb-2 font-medium">{title}</h2>
-      <Panel className="px-5 py-1">
+      <h2 className="mb-2 font-mono text-[12.5px] font-semibold">
+        <span aria-hidden className="text-ink-muted">[</span>
+        {title}
+        <span aria-hidden className="text-ink-muted">]</span>
+      </h2>
+      <Panel className="px-4 py-0.5">
         <div className="divide-y">{children}</div>
       </Panel>
     </section>
@@ -245,7 +249,7 @@ function Row({
   children: ReactNode;
 }) {
   return (
-    <div className="flex items-start justify-between gap-6 py-3.5">
+    <div className="flex items-start justify-between gap-6 py-3">
       <div className="min-w-0">
         <Label htmlFor={id} className="cursor-pointer">
           {label}

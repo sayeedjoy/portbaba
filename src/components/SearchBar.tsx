@@ -17,7 +17,7 @@ interface SearchBarProps {
 
 /** FR-002 / FR-003 / FR-021 — one field for ports, names and ranges. */
 export const SearchBar = forwardRef<SearchHandle, SearchBarProps>(function SearchBar(
-  { value, onChange, placeholder = "Search a port, process or range", className },
+  { value, onChange, placeholder = "Filter by port, process or 3000-3100", className },
   ref,
 ) {
   const inputRef = useRef<HTMLInputElement>(null);

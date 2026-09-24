@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { StateTag } from "@/components/app/StateTag";
 import { useFilteredPorts, useVisiblePorts } from "@/hooks/usePorts";
 import { useKill } from "@/hooks/useKill";
-import { parseRange, pluralise } from "@/lib/utils";
+import { cn, parseRange, pluralise } from "@/lib/utils";
 import * as api from "@/services/tauri";
 import { useData } from "@/stores/dataStore";
 import { useSettings } from "@/stores/settingsStore";
@@ -47,7 +47,7 @@ export const Ports = forwardRef<SearchHandle>(function Ports(_props, ref) {
   return (
     <div className="mx-auto max-w-6xl px-6 py-6">
       <PageHeader
-        title="Ports"
+        title="ports"
         description={
           settings.devOnly
             ? `${pluralise(servers, "dev server")} using ports`
@@ -61,22 +61,25 @@ export const Ports = forwardRef<SearchHandle>(function Ports(_props, ref) {
         <FilterChip
           active={settings.devOnly}
           onClick={() => void updateSettings({ devOnly: !settings.devOnly })}
+          label="Dev only"
         >
-          Dev only
+          --dev-only
         </FilterChip>
         <FilterChip
           active={settings.showUdp}
           onClick={() => void updateSettings({ showUdp: !settings.showUdp })}
+          label="UDP"
         >
-          UDP
+          --udp
         </FilterChip>
         <FilterChip
           active={settings.showEstablished}
+          label="Established connections"
           onClick={() =>
             void updateSettings({ showEstablished: !settings.showEstablished })
           }
         >
-          Established connections
+          --established
         </FilterChip>
 
         {/* Say what the filter is hiding, so a short list never reads as "that's everything". */}
@@ -147,13 +150,17 @@ export const Ports = forwardRef<SearchHandle>(function Ports(_props, ref) {
   );
 });
 
+/** A scan filter, written as the command-line flag it amounts to. */
 function FilterChip({
   active,
   onClick,
+  label,
   children,
 }: {
   active: boolean;
   onClick: () => void;
+  /** The plain name, for assistive tech; the visible text is the flag. */
+  label: string;
   children: React.ReactNode;
 }) {
   return (
@@ -161,12 +168,21 @@ function FilterChip({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={
+      aria-label={label}
+      className={cn(
+        "flex h-7 items-center gap-2 rounded-sm border px-2.5 font-mono text-[12px]",
         active
-          ? "h-8 rounded-lg border border-transparent bg-ink px-3 text-[13px] font-medium text-panel"
-          : "h-8 rounded-lg border border-hairline bg-raised px-3 text-[13px] text-ink-soft hover:border-hairline-strong hover:text-ink"
-      }
+          ? "border-ink/70 bg-panel text-ink"
+          : "border-hairline bg-transparent text-ink-muted hover:border-hairline-strong hover:text-ink",
+      )}
     >
+      <span
+        aria-hidden
+        className={cn(
+          "size-2 rounded-[1px] border",
+          active ? "border-ink bg-ink" : "border-ink-muted",
+        )}
+      />
       {children}
     </button>
   );
@@ -230,7 +246,7 @@ function RangeResults({
       </p>
 
       {!loading && results && (
-        <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(132px,1fr))] gap-1.5">
+        <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-1.5">
           {results.map((result) => {
             const holder = result.entries[0];
             return (
@@ -238,16 +254,16 @@ function RangeResults({
                 key={result.port}
                 className={
                   result.available
-                    ? "rounded-lg border border-hairline px-2.5 py-2"
-                    : "rounded-lg border border-[var(--occupied)]/45 bg-[var(--occupied-wash)] px-2.5 py-2"
+                    ? "rounded-sm border border-hairline px-2.5 py-2"
+                    : "rounded-sm border border-[var(--occupied)]/45 bg-[var(--occupied-wash)] px-2.5 py-2"
                 }
               >
                 <div className="flex items-baseline justify-between gap-2">
                   <span
                     className={
                       result.available
-                        ? "font-semibold text-ink-muted"
-                        : "font-semibold text-[var(--occupied)]"
+                        ? "font-mono font-semibold text-ink-muted"
+                        : "font-mono font-semibold text-[var(--occupied)]"
                     }
                   >
                     {result.port}
@@ -266,7 +282,7 @@ function RangeResults({
                   <button
                     type="button"
                     onClick={() => openDetails(holder.pid)}
-                    className="mt-0.5 block w-full truncate text-left text-[12.5px] text-ink-soft hover:text-ink"
+                    className="mt-0.5 block w-full truncate text-left font-mono text-[12px] text-ink-soft hover:text-ink"
                   >
                     {holder.processName}
                   </button>

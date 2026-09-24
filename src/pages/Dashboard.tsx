@@ -34,19 +34,19 @@ export const Dashboard = forwardRef<QuickKillHandle>(function Dashboard(_props, 
       {favorites.length > 0 && (
         <section className="mt-7" aria-labelledby="favorites-heading">
           <div className="mb-3 flex items-baseline justify-between gap-4">
-            <h2 id="favorites-heading" className="font-medium">
-              Favourites
+            <h2 id="favorites-heading" className="font-semibold">
+              favourites <span className="font-normal text-ink-muted">{favorites.length}</span>
             </h2>
             <button
               type="button"
               onClick={() => navigate("favorites")}
-              className="text-[13px] text-ink-muted hover:text-ink"
+              className="text-[12.5px] text-ink-muted hover:text-ink"
             >
-              Manage
+              manage
             </button>
           </div>
 
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(158px,1fr))] gap-2.5">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(168px,1fr))] gap-2.5">
             {favorites.map((favorite) => (
               <PortBerth
                 key={favorite.id}
@@ -63,16 +63,16 @@ export const Dashboard = forwardRef<QuickKillHandle>(function Dashboard(_props, 
 
       <section className="mt-7" aria-labelledby="active-heading">
         <div className="mb-3 flex items-baseline justify-between gap-4">
-          <h2 id="active-heading" className="font-medium">
-            Listening now
+          <h2 id="active-heading" className="font-semibold">
+            listening <span className="font-normal text-ink-muted">{listening.length}</span>
           </h2>
           {listening.length > shown.length && (
             <button
               type="button"
               onClick={() => navigate("ports")}
-              className="text-[13px] text-ink-muted hover:text-ink"
+              className="text-[12.5px] text-ink-muted hover:text-ink"
             >
-              See all {listening.length}
+              see all
             </button>
           )}
         </div>
