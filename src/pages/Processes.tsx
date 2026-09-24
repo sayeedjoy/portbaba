@@ -9,6 +9,7 @@ import { pluralise, truncateStart } from "@/lib/utils";
 import { useData } from "@/stores/dataStore";
 import { useSettings } from "@/stores/settingsStore";
 import { useUi } from "@/stores/uiStore";
+import type { PortInfo } from "@/types/system";
 
 /** §35 — ports grouped under the process that owns them, plus FR-020. */
 export function Processes() {
@@ -149,14 +150,14 @@ export function Processes() {
                 </div>
 
                 <ul className="mt-2.5 flex flex-wrap gap-1.5 font-mono">
-                  {group.ports.map((port) => (
+                  {bindings(group.ports).map(({ key, port, protocol, addresses }) => (
                     <li
-                      key={port.id}
+                      key={key}
                       className="rounded-sm border border-hairline bg-raised px-1.5 py-0.5 text-[12.5px]"
-                      title={`${port.protocol} on ${port.address} — ${port.state}`}
+                      title={`${protocol} on ${addresses.join(", ")}`}
                     >
-                      <span className="font-semibold">{port.port}</span>
-                      <span className="text-ink-muted">/{port.protocol.toLowerCase()}</span>
+                      <span className="font-semibold">{port}</span>
+                      <span className="text-ink-muted">/{protocol.toLowerCase()}</span>
                     </li>
                   ))}
                 </ul>
@@ -167,4 +168,30 @@ export function Processes() {
       )}
     </div>
   );
+}
+
+/**
+ * One chip per port and protocol, the way `docker ps` writes it. A server
+ * bound on both IPv4 and IPv6 is one port to the person reading this.
+ */
+function bindings(ports: PortInfo[]) {
+  const seen = new Map<
+    string,
+    { key: string; port: number; protocol: string; addresses: string[] }
+  >();
+  for (const socket of ports) {
+    const key = `${socket.port}/${socket.protocol}`;
+    const entry = seen.get(key);
+    if (entry) {
+      entry.addresses.push(socket.address);
+    } else {
+      seen.set(key, {
+        key,
+        port: socket.port,
+        protocol: socket.protocol,
+        addresses: [socket.address],
+      });
+    }
+  }
+  return [...seen.values()];
 }
