@@ -11,6 +11,16 @@ export type Route =
   | "history"
   | "settings";
 
+/** Sidebar order, which is also the order of the Mod+1…6 shortcuts. */
+export const ROUTES: Route[] = [
+  "dashboard",
+  "ports",
+  "processes",
+  "favorites",
+  "history",
+  "settings",
+];
+
 /** What a confirmation dialog needs to know (FR-007). */
 export interface KillRequest {
   kind: "port" | "process" | "selection" | "name";

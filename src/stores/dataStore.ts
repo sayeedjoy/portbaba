@@ -22,6 +22,8 @@ interface DataState {
   refreshing: boolean;
   error: string | null;
   lastScan: number | null;
+  /** How long the last successful scan took, round trip, in milliseconds. */
+  scanMs: number | null;
 
   refresh: () => Promise<void>;
   loadLocalState: () => Promise<void>;
@@ -43,6 +45,7 @@ export const useData = create<DataState>((set, get) => ({
   refreshing: false,
   error: null,
   lastScan: null,
+  scanMs: null,
 
   /**
    * FR-009 / FR-010. Overlapping refreshes are coalesced: a 1-second auto
@@ -55,12 +58,19 @@ export const useData = create<DataState>((set, get) => ({
     set({ refreshing: true });
 
     inFlight = (async () => {
+      const started = performance.now();
       try {
         const [ports, groups] = await Promise.all([
           api.getActivePorts(options),
           api.getProcessGroups(options),
         ]);
-        set({ ports, groups, error: null, lastScan: Date.now() });
+        set({
+          ports,
+          groups,
+          error: null,
+          lastScan: Date.now(),
+          scanMs: Math.round(performance.now() - started),
+        });
       } catch (error) {
         // §51 — keep showing the last good table and say what went wrong.
         set({ error: error instanceof Error ? error.message : String(error) });

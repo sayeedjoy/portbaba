@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 
 import { useData } from "@/stores/dataStore";
-import { useUi } from "@/stores/uiStore";
+import { ROUTES, useUi } from "@/stores/uiStore";
 import * as api from "@/services/tauri";
 
 /** §55 — the app-wide keyboard shortcuts. */
@@ -16,6 +16,14 @@ export function useHotkeys(options: { focusQuickKill: () => void; focusSearch: (
       const mod = event.metaKey || event.ctrlKey;
       if (!mod) return;
       const key = event.key.toLowerCase();
+
+      // Mod+1…6 jump straight to a section, in sidebar order.
+      const index = Number(key) - 1;
+      if (!event.shiftKey && index >= 0 && index < ROUTES.length) {
+        event.preventDefault();
+        navigate(ROUTES[index]);
+        return;
+      }
 
       if (key === "k" && event.shiftKey) {
         event.preventDefault();
