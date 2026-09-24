@@ -407,8 +407,10 @@
   animation: caret 1.06s steps(1) infinite;
 }
 
+/* `.motion-feedback` marks motion that only ever plays in direct answer to
+   something the person did, and is left alone (see RefreshSpinner). */
 @media (prefers-reduced-motion: reduce) {
-  *,
+  *:not(.motion-feedback),
   *::before,
   *::after {
     animation-duration: 0.01ms !important;

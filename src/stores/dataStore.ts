@@ -24,8 +24,10 @@ interface DataState {
   lastScan: number | null;
   /** How long the last successful scan took, round trip, in milliseconds. */
   scanMs: number | null;
+  /** Counts scans a person asked for, as opposed to the auto-refresh timer. */
+  manualScans: number;
 
-  refresh: () => Promise<void>;
+  refresh: (options?: { manual?: boolean }) => Promise<void>;
   loadLocalState: () => Promise<void>;
   reloadHistory: () => Promise<void>;
   setFavorites: (favorites: FavoritePort[]) => void;
@@ -46,12 +48,16 @@ export const useData = create<DataState>((set, get) => ({
   error: null,
   lastScan: null,
   scanMs: null,
+  manualScans: 0,
 
   /**
    * FR-009 / FR-010. Overlapping refreshes are coalesced: a 1-second auto
    * refresh must never queue scans faster than the OS can answer them.
    */
-  async refresh() {
+  async refresh(request) {
+    // Counted even when it joins a scan already in flight: the person still
+    // gets feedback that their request was heard.
+    if (request?.manual) set({ manualScans: get().manualScans + 1 });
     if (inFlight) return inFlight;
 
     const options = scanOptions(useSettings.getState().settings);

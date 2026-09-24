@@ -43,7 +43,7 @@ export function useHotkeys(options: { focusQuickKill: () => void; focusSearch: (
       }
       if (key === "r") {
         event.preventDefault();
-        void refresh();
+        void refresh({ manual: true });
         return;
       }
       if (key === "f") {

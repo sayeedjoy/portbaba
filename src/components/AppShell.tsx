@@ -221,7 +221,7 @@ function StatusBar() {
   return (
     <footer className="flex h-6 shrink-0 items-stretch border-t border-hairline bg-panel font-mono text-[11.5px] text-ink-soft">
       <StatusItem
-        onClick={() => void refresh()}
+        onClick={() => void refresh({ manual: true })}
         title={`Rescan (${shortcutLabel("Mod+R")})`}
         className={cn(error && "text-[var(--danger)]")}
       >
@@ -316,20 +316,32 @@ function StatusItem({
 
 /**
  * A scan usually finishes in milliseconds, far too fast for a spinner that
- * stops the moment it ends. So every scan, manual or automatic, turns the
- * icon at least once, and it only stops at the end of a full turn.
+ * stops the moment it ends. So a scan turns the icon at least once, and it
+ * only stops at the end of a full turn.
+ *
+ * With reduced motion on, the timer's background scans stay still, but a
+ * scan the person asked for (click, Mod+R, the palette) still turns it once:
+ * that motion is the answer to their action, not ambient movement. The class
+ * `motion-feedback` exempts it from the global reduced-motion override.
  */
 function RefreshSpinner({ refreshing }: { refreshing: boolean }) {
   const [spinning, setSpinning] = useState(false);
+  const manualScans = useData((s) => s.manualScans);
 
   useEffect(() => {
-    if (refreshing) setSpinning(true);
+    if (refreshing && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setSpinning(true);
+    }
   }, [refreshing]);
+
+  useEffect(() => {
+    if (manualScans > 0) setSpinning(true);
+  }, [manualScans]);
 
   return (
     <RefreshCw
       aria-hidden
-      className={cn("h-3 w-3 shrink-0", spinning && "animate-spin")}
+      className={cn("motion-feedback h-3 w-3 shrink-0", spinning && "animate-spin")}
       onAnimationIteration={() => {
         if (!useData.getState().refreshing) setSpinning(false);
       }}

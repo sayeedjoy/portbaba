@@ -201,7 +201,10 @@ export function CommandPalette() {
         </CommandGroup>
 
         <CommandGroup heading="Actions">
-          <CommandItem value="refresh ports" onSelect={() => run(() => void refresh())}>
+          <CommandItem
+            value="refresh ports"
+            onSelect={() => run(() => void refresh({ manual: true }))}
+          >
             Refresh ports
           </CommandItem>
           <CommandItem
