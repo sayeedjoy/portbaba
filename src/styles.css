@@ -2,32 +2,26 @@
 
 /* ---------------------------------------------------------------------------
    Typography
-   Archivo carries the interface: a grotesque with signage proportions and real
-   tabular figures, which matters when the content is columns of port numbers.
-   IBM Plex Mono is reserved for literal shell text — command lines and paths.
+   Geist carries the interface: navigation, headings, buttons, sentences.
+   Geist Mono, its twin, is used for everything a developer would otherwise
+   read in a terminal: ports, PIDs, bind addresses, executables, command lines
+   and the Quick Kill prompt. One family, two widths, so the switch between
+   words and data is visible without the two ever looking unrelated.
    Both are bundled so the app renders identically offline.
 --------------------------------------------------------------------------- */
 
 @font-face {
-  font-family: "Archivo";
-  src: url("./assets/fonts/Archivo-400_700.woff2") format("woff2-variations");
-  font-weight: 400 700;
+  font-family: "Geist";
+  src: url("./assets/fonts/Geist-Variable.woff2") format("woff2-variations");
+  font-weight: 100 900;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "IBM Plex Mono";
-  src: url("./assets/fonts/IBMPlexMono-400.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "IBM Plex Mono";
-  src: url("./assets/fonts/IBMPlexMono-500.woff2") format("woff2");
-  font-weight: 500;
+  font-family: "Geist Mono";
+  src: url("./assets/fonts/GeistMono-Variable.woff2") format("woff2-variations");
+  font-weight: 100 900;
   font-style: normal;
   font-display: swap;
 }
@@ -230,11 +224,18 @@
   --color-protected-wash: var(--protected-wash);
   --color-focus: var(--focus);
 
-  --font-sans: "Archivo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
   --shadow-panel: var(--shadow-panel);
   --shadow-lift: var(--shadow-lift);
+}
+
+/* The shadcn components use `text-sm`; bring it to the 13px the rest of the
+   interface is set in, so a dialog never reads larger than the page. */
+@theme {
+  --text-sm: 0.8125rem;
+  --text-sm--line-height: 1.5;
 }
 
 /* ---------------------------------------------------------------------------
@@ -263,8 +264,8 @@
     background: var(--ground);
     color: var(--ink);
     font-family: var(--font-sans);
-    font-size: 14px;
-    line-height: 1.5;
+    font-size: 13px;
+    line-height: 1.55;
     /* Numbers are the content of this app, so they always align in columns. */
     font-variant-numeric: tabular-nums;
     -webkit-font-smoothing: antialiased;
