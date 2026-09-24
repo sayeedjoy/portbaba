@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "rust-best-practices": {
+      "source": "apollographql/skills",
+      "sourceType": "github",
+      "skillPath": "skills/rust-best-practices/SKILL.md",
+      "computedHash": "5ae68ae0241d65dac8a73f06139457206dde55912aecd4c36cd462fa85570513"
+    }
+  }
+}
