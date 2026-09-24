@@ -1,4 +1,11 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { Star } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -20,11 +27,19 @@ export interface QuickKillHandle {
  * The field checks the port while you type, so the answer to "is 3000 busy, and
  * what has it?" arrives before you decide to act. Type, read, press Enter:
  * three interactions, as §52 asks for.
+ *
+ * It is drawn as a prompt: `:port`, a block cursor, and the answer printed on
+ * the line below like command output.
  */
 export const QuickKill = forwardRef<QuickKillHandle>(function QuickKill(_props, ref) {
   const [value, setValue] = useState("");
   const [status, setStatus] = useState<PortStatus | null>(null);
   const [checking, setChecking] = useState(false);
+  const [focused, setFocused] = useState(false);
+  // Where the drawn cursor sits, in characters. The native caret is a hairline
+  // at this size, so a thicker editor-style bar replaces it whenever the
+  // selection is collapsed; with a range selected there is no caret to draw.
+  const [caret, setCaret] = useState<number | null>(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const allowForceKill = useSettings((s) => s.settings.allowForceKill);
@@ -99,55 +114,118 @@ export const QuickKill = forwardRef<QuickKillHandle>(function QuickKill(_props, 
     }
   }
 
+  function trackCaret() {
+    const el = inputRef.current;
+    if (!el) return;
+    setCaret(el.selectionStart === el.selectionEnd ? el.selectionStart : null);
+  }
+
+  // Typing, deleting and filtered keystrokes all move the caret; read it back
+  // once React has written the new value.
+  useLayoutEffect(trackCaret, [value]);
+
+  // Chromium fires `selectionchange` on the input itself, which React's
+  // document-level onSelect never hears, so listen where it actually lands.
+  useEffect(() => {
+    const el = inputRef.current;
+    el?.addEventListener("selectionchange", trackCaret);
+    return () => el?.removeEventListener("selectionchange", trackCaret);
+  }, []);
+
+  // Monospace, so one `ch` is exactly one digit: the cursor's offset is its
+  // character index, and the field is as wide as its text (or the ghost "3000").
+  const cells = Math.max(value.length, 4);
+  const showCaret = focused && caret !== null;
+
   return (
     <section
       className={cn(
-        "rounded-2xl border bg-panel p-6 shadow-[var(--shadow-panel)] transition-colors duration-200",
+        "rounded-md border bg-panel transition-colors duration-200",
         occupied ? "border-[var(--occupied)]" : "border-hairline",
       )}
       aria-labelledby="quick-kill-heading"
     >
-      <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
-        <div className="min-w-0 flex-1">
-          <h2 id="quick-kill-heading" className="text-ink-soft">
-            Free a port
-          </h2>
+      <div className="flex items-center justify-between gap-4 border-b border-hairline px-5 py-2 text-[12px] text-ink-muted">
+        <h2 id="quick-kill-heading">free a port</h2>
+        <p className="flex items-center gap-3" aria-hidden>
+          <KeyHint keys="⏎" label="kill" />
+          {allowForceKill && <KeyHint keys="⇧⏎" label="force" />}
+          <KeyHint keys="esc" label="clear" />
+        </p>
+      </div>
 
+      <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4 px-5 pt-4 pb-5">
+        <div className="min-w-0 flex-1">
           {/* The number is the hero: everything else on this screen stays quiet. */}
-          <div className="mt-1 flex items-baseline gap-4">
-            <input
-              ref={inputRef}
-              value={value}
-              inputMode="numeric"
-              autoComplete="off"
-              spellCheck={false}
-              aria-label="Port number"
-              aria-describedby="quick-kill-status"
-              placeholder="3000"
-              maxLength={5}
-              onChange={(event) =>
-                setValue(event.target.value.replace(/[^\d]/g, "").slice(0, 5))
-              }
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.preventDefault();
-                  submit(event.shiftKey && allowForceKill);
-                }
-              }}
+          <div
+            className="flex cursor-text items-baseline gap-3"
+            onClick={() => inputRef.current?.focus()}
+          >
+            <span
               className={cn(
-                "w-[5.2ch] bg-transparent p-0 text-[68px] leading-[1.05] font-bold tracking-[-0.035em]",
-                "outline-none placeholder:text-ink-muted/35 focus-visible:outline-none",
-                occupied && "text-[var(--occupied)]",
+                "flex items-baseline font-mono text-[64px] leading-[1.1] font-semibold",
+                occupied ? "text-[var(--occupied)]" : "text-ink",
               )}
-            />
+            >
+              <span aria-hidden className="text-ink-muted/60">
+                :
+              </span>
+              <span className="relative inline-block">
+                <input
+                  ref={inputRef}
+                  value={value}
+                  inputMode="numeric"
+                  autoComplete="off"
+                  spellCheck={false}
+                  aria-label="Port number"
+                  aria-describedby="quick-kill-status"
+                  placeholder="3000"
+                  maxLength={5}
+                  onFocus={() => {
+                    setFocused(true);
+                    trackCaret();
+                  }}
+                  onBlur={() => setFocused(false)}
+                  onSelect={trackCaret}
+                  onChange={(event) =>
+                    setValue(event.target.value.replace(/[^\d]/g, "").slice(0, 5))
+                  }
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      submit(event.shiftKey && allowForceKill);
+                    } else if (event.key === "Escape" && value) {
+                      event.preventDefault();
+                      setValue("");
+                    }
+                  }}
+                  style={{ width: `calc(${cells}ch + 6px)`, caretColor: "transparent" }}
+                  className="bg-transparent p-0 font-semibold outline-none placeholder:text-ink-muted/30 focus-visible:outline-none"
+                />
+                {showCaret && (
+                  // Keyed on the value and position so the blink restarts on
+                  // every keystroke: solid while typing, blinking at rest.
+                  <span
+                    key={`${value}:${caret}`}
+                    aria-hidden
+                    className="animate-caret pointer-events-none absolute top-[0.14em] h-[0.9em] w-[3px] -translate-x-px rounded-full bg-[var(--focus)]"
+                    style={{ left: `${caret}ch` }}
+                  />
+                )}
+              </span>
+            </span>
 
             {port !== null && (
               <button
                 type="button"
-                onClick={() => void toggleFavorite()}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  void toggleFavorite();
+                }}
                 aria-pressed={isFavorite}
                 aria-label={isFavorite ? "Remove from favourites" : "Save to favourites"}
-                className="rounded-md p-1.5 text-ink-muted hover:bg-raised hover:text-ink"
+                title={isFavorite ? "Remove from favourites" : "Save to favourites"}
+                className="self-center rounded-sm p-1.5 text-ink-muted hover:bg-raised hover:text-ink"
               >
                 <Star
                   aria-hidden
@@ -160,7 +238,7 @@ export const QuickKill = forwardRef<QuickKillHandle>(function QuickKill(_props, 
           <p
             id="quick-kill-status"
             aria-live="polite"
-            className="mt-2 min-h-[22px] text-[15px]"
+            className="mt-1 flex min-h-[22px] flex-wrap items-baseline gap-x-3 text-[13.5px]"
           >
             <StatusLine
               value={value}
@@ -192,6 +270,18 @@ export const QuickKill = forwardRef<QuickKillHandle>(function QuickKill(_props, 
   );
 });
 
+function KeyHint({ keys, label }: { keys: string; label: string }) {
+  return (
+    <span className="flex items-center gap-1.5">
+      <kbd className="rounded-sm border border-hairline bg-raised px-1 font-mono text-[11px] leading-[16px] text-ink-soft">
+        {keys}
+      </kbd>
+      {label}
+    </span>
+  );
+}
+
+/** The line under the prompt, written like the output of the command above it. */
 function StatusLine({
   value,
   tooLong,
@@ -206,43 +296,54 @@ function StatusLine({
   status: PortStatus | null;
 }) {
   if (tooLong) {
-    return <span className="text-[var(--danger)]">Ports run from 1 to 65535.</span>;
+    return <span className="text-[var(--danger)]">ports run from 1 to 65535</span>;
   }
   if (!value) {
-    return <span className="text-ink-muted">Type a port to see what is holding it.</span>;
+    return <span className="text-ink-muted">type a port to see what is holding it</span>;
   }
-  if (checking && !status) {
-    return <span className="text-ink-muted">Checking…</span>;
-  }
-  if (!status || status.port !== port) {
-    return <span className="text-ink-muted">Checking…</span>;
+  if ((checking && !status) || !status || status.port !== port) {
+    return <span className="text-ink-muted">checking :{port}…</span>;
   }
   if (status.available) {
-    return <span className="text-[var(--free)]">Nothing is using this port.</span>;
+    return (
+      <>
+        <Dot className="bg-[var(--free)]" />
+        <span className="text-[var(--free)]">free</span>
+        <span className="text-ink-muted">nothing is using :{port}</span>
+      </>
+    );
   }
 
   const holder = status.entries[0];
   const extra = status.entries.length - 1;
+  const project = holder.project;
 
   return (
-    <span className="text-ink">
-      Held by{" "}
-      <span className="font-semibold">{holder.processName}</span>
+    <>
+      <Dot className="bg-[var(--occupied)]" />
+      <span className="text-[var(--occupied)]">in use</span>
+      <span className="font-mono font-semibold text-ink">{holder.processName}</span>
       {!holder.ownerUnknown && (
-        <span className="text-ink-muted"> at PID {holder.pid}</span>
+        <span className="font-mono text-ink-muted">pid {holder.pid}</span>
       )}
-      {holder.project?.framework && (
-        <span className="text-ink-soft"> — {holder.project.framework}</span>
-      )}
-      {holder.project && holder.project.framework !== holder.project.name && (
-        <span className="text-ink-soft"> in {holder.project.name}</span>
+      {project && (
+        <span className="text-ink-soft">
+          {project.framework && project.framework !== project.name
+            ? `${project.framework} in ${project.name}`
+            : (project.framework ?? project.name)}
+        </span>
       )}
       {extra > 0 && (
         <span className="text-ink-muted">
-          {" "}
-          and {extra} other {extra === 1 ? "process" : "processes"}
+          +{extra} more {extra === 1 ? "process" : "processes"}
         </span>
       )}
-    </span>
+    </>
+  );
+}
+
+function Dot({ className }: { className: string }) {
+  return (
+    <span aria-hidden className={cn("size-2 shrink-0 self-center rounded-full", className)} />
   );
 }
